@@ -442,7 +442,7 @@ footer a:hover{color:var(--gold);}
 <header class="top-bar">
   <a class="brand" href="https://www.anicadetech.xyz">
     <span class="brand-mark"><img src="https://i.imgur.com/RcBmjWM.png" alt="Anicade"></span>
-    <span>ANICADE<span class="dot">.</span>TOOLKIT</span>
+    <span>ANICADE<span class="dot">.</span>TECH</span>
   </a>
   <nav class="nav-links">
     <a class="nav-link" href="#how">How It Works</a>
@@ -513,7 +513,7 @@ footer a:hover{color:var(--gold);}
 
       <div class="notice">
         <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>Works with any text or URL — Wi-Fi credentials, contact cards, links, plain notes. Generated via the free public goQR.me API.</span>
+        <span>Works with any text or URL — Wi-Fi credentials, contact cards, links, plain notes.</span>
       </div>
     </div>
 
@@ -547,7 +547,7 @@ footer a:hover{color:var(--gold);}
 
       <div class="notice">
         <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>Shortened via the free public CleanURI API. Links are permanent and public once created — don't shorten anything private.</span>
+        <span>Links are permanent and public once created — don't shorten anything private.</span>
       </div>
     </div>
 
@@ -664,15 +664,15 @@ async function shortenLink() {
   setStatus('short-status', 'loading', 'Shortening your link…');
 
   try {
-    const res = await fetch('https://cleanuri.com/api/v1/shorten', {
+    const res = await fetch('https://spoo.me/api/v1/shorten', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'url=' + encodeURIComponent(raw)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ long_url: raw })
     });
     const data = await res.json();
 
-    if (!res.ok || !data.result_url) {
-      throw new Error(data.error || 'unknown');
+    if (!res.ok || !data.short_url) {
+      throw new Error(data.error || data.message || 'unknown');
     }
 
     clearStatus('short-status');
@@ -680,13 +680,12 @@ async function shortenLink() {
     document.getElementById('short-info').innerHTML =
       'Original: <span>' + (raw.length > 45 ? raw.slice(0, 45) + '…' : raw) + '</span>';
     const openBtn = document.getElementById('short-open');
-    openBtn.href = data.result_url;
-    openBtn.textContent = '';
-    openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> ' + data.result_url;
+    openBtn.href = data.short_url;
+    openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> ' + data.short_url;
 
     const copyBtn = document.getElementById('short-copy');
     copyBtn.onclick = () => {
-      navigator.clipboard.writeText(data.result_url).then(() => {
+      navigator.clipboard.writeText(data.short_url).then(() => {
         copyBtn.textContent = '✓ Copied!';
         setTimeout(() => {
           copyBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Link';
