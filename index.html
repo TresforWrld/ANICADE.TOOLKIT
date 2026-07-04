@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
 <style>
 :root {
   --primary: #0b1c2d;
@@ -451,6 +453,24 @@ main{position:relative;z-index:1;}
   width:0%;transition:width 0.3s ease;
 }
 
+/* OCR QUEUE */
+.ocr-row{
+  display:grid;grid-template-columns:24px 1fr 70px 60px;gap:10px;align-items:center;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(198,168,92,0.15);
+  border-radius:8px;padding:9px 12px;margin-bottom:6px;
+  font-size:12.5px;
+}
+.ocr-row .ocr-idx{color:var(--muted);font-family:"Orbitron",sans-serif;font-size:10px;}
+.ocr-row .ocr-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-weight:600;}
+.ocr-row .ocr-mini-track{height:5px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;}
+.ocr-row .ocr-mini-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--gold));width:0%;transition:width 0.2s ease;}
+.ocr-row .ocr-status{text-align:right;font-family:"Orbitron",sans-serif;font-size:10px;letter-spacing:0.04em;}
+.ocr-row .ocr-status.wait{color:var(--muted);}
+.ocr-row .ocr-status.run{color:var(--accent);}
+.ocr-row .ocr-status.done{color:var(--success);}
+.ocr-row .ocr-status.err{color:var(--danger);}
+
 /* NOTICE */
 .notice{
   display:flex;gap:10px;align-items:flex-start;
@@ -556,7 +576,7 @@ footer a:hover{color:var(--gold);}
     FREE &nbsp;·&nbsp; NO SIGNUP &nbsp;·&nbsp; NO LIMITS
   </div>
   <h1>Every Link &amp; Image Tool<br><span class="gold">In One Place.</span></h1>
-  <p class="hero-sub">QR codes, short links, background removal, compression and format conversion — always free, no account needed.</p>
+  <p class="hero-sub">QR codes, short links, background removal, compression, format conversion and OCR text extraction — always free, no account needed.</p>
 </section>
 
 <div class="dl-wrap">
@@ -576,6 +596,10 @@ footer a:hover{color:var(--gold);}
     <button class="tab-btn" id="tab-img" onclick="switchTab('img')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
       Image Tools
+    </button>
+    <button class="tab-btn" id="tab-ocr" onclick="switchTab('ocr')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+      OCR
     </button>
   </div>
 
@@ -780,27 +804,96 @@ footer a:hover{color:var(--gold);}
       </div>
     </div>
 
+    <!-- OCR PANEL -->
+    <div class="tool-panel" id="panel-ocr">
+      <div class="dropzone" id="ocr-dropzone" onclick="document.getElementById('ocr-file').click()">
+        <input type="file" id="ocr-file" accept=".pdf,image/*" multiple />
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+        <div class="dropzone-text">Drop PDFs or scanned images, or click to browse</div>
+        <div class="dropzone-sub">Any mix, any order — up to 100+ pages, processed on your device</div>
+      </div>
+
+      <div class="options-row" style="margin-top:16px;">
+        <span class="opt-label">Language</span>
+        <select class="qual-select" id="ocr-lang">
+          <option value="eng" selected>English</option>
+          <option value="fra">French</option>
+          <option value="deu">German</option>
+          <option value="spa">Spanish</option>
+          <option value="por">Portuguese</option>
+          <option value="ita">Italian</option>
+          <option value="nld">Dutch</option>
+          <option value="swa">Swahili</option>
+          <option value="chi_sim">Chinese (Simplified)</option>
+          <option value="jpn">Japanese</option>
+          <option value="ara">Arabic</option>
+          <option value="rus">Russian</option>
+        </select>
+      </div>
+
+      <div id="ocr-queue" style="display:none;margin-top:4px;max-height:260px;overflow-y:auto;"></div>
+
+      <div class="url-row" style="margin-top:16px;">
+        <button class="dl-btn" id="ocr-start-btn" onclick="startOcr()" style="width:100%;justify-content:center;" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16 2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          START SCANNING
+        </button>
+      </div>
+      <div class="url-row" id="ocr-active-row" style="display:none;margin-top:10px;">
+        <button class="dl-link secondary" id="ocr-cancel-btn" style="flex:1;justify-content:center;">Cancel</button>
+        <button class="dl-link secondary" id="ocr-clear-btn" style="flex:1;justify-content:center;">Clear</button>
+      </div>
+
+      <div class="status-box" id="ocr-status"></div>
+      <div class="progress-track" id="ocr-progress-track" style="display:none;">
+        <div class="progress-fill" id="ocr-progress-fill"></div>
+      </div>
+
+      <div class="result-box" id="ocr-result">
+        <div class="result-meta">
+          <div class="result-title">Extracted text</div>
+          <div class="result-info" id="ocr-info"></div>
+          <div id="ocr-output" style="background:rgba(255,255,255,0.03);border:1px solid rgba(198,168,92,0.15);border-radius:8px;padding:16px;font-family:'Courier New',monospace;font-size:12.5px;line-height:1.6;max-height:320px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;color:var(--text);margin-bottom:14px;"></div>
+          <div class="dl-links">
+            <a class="dl-link primary" id="ocr-download" download="ocr-text.txt">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download .txt
+            </a>
+            <button class="dl-link secondary" id="ocr-copy">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy All
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="notice">
+        <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Runs fully in your browser — your documents are never uploaded anywhere. Large batches (100+ pages) take real time; keep this tab open while it works.</span>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <!-- HOW IT WORKS -->
 <section class="how-section" id="how">
   <div class="section-label">// HOW IT WORKS</div>
-  <div class="section-title">Four tools, one card</div>
+  <div class="section-title">Five tools, one card</div>
   <div class="steps-grid">
     <div class="step-card">
       <div class="step-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       </div>
       <div class="step-name">Pick a tool</div>
-      <div class="step-desc">Switch between QR Code, Short Link, BG Remover and Image Tools using the tabs above the card.</div>
+      <div class="step-desc">Switch between QR Code, Short Link, BG Remover, Image Tools and OCR using the tabs above the card.</div>
     </div>
     <div class="step-card">
       <div class="step-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </div>
-      <div class="step-name">Add your link or image</div>
-      <div class="step-desc">Paste a URL, or drop in a photo — no account, no settings, nothing else required.</div>
+      <div class="step-name">Add your link or file</div>
+      <div class="step-desc">Paste a URL, or drop in a photo or document — no account, no settings, nothing else required.</div>
     </div>
     <div class="step-card">
       <div class="step-icon">
@@ -826,7 +919,7 @@ footer a:hover{color:var(--gold);}
 
 <script>
 function switchTab(name) {
-  ['qr','short','bg','img'].forEach(t => {
+  ['qr','short','bg','img','ocr'].forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('active', t === name);
     document.getElementById('panel-' + t).classList.toggle('active', t === name);
   });
@@ -1127,6 +1220,245 @@ async function processImage() {
 
   btn.disabled = false;
 }
+
+/* ---------- OCR (pdf.js + tesseract.js, runs fully on-device) ---------- */
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js";
+
+let ocrJobs = [];
+let ocrRunning = false;
+let ocrCancelRequested = false;
+let ocrWorkerPool = [];
+const OCR_POOL_SIZE = 2;
+const ocrCurrentJobByWorker = new Map();
+
+const ocrDropzone = document.getElementById('ocr-dropzone');
+const ocrFileInput = document.getElementById('ocr-file');
+const ocrQueueEl = document.getElementById('ocr-queue');
+const ocrStartBtn = document.getElementById('ocr-start-btn');
+const ocrActiveRow = document.getElementById('ocr-active-row');
+const ocrCancelBtn = document.getElementById('ocr-cancel-btn');
+const ocrClearBtn = document.getElementById('ocr-clear-btn');
+const ocrProgressTrack = document.getElementById('ocr-progress-track');
+const ocrProgressFill = document.getElementById('ocr-progress-fill');
+const ocrResultBox = document.getElementById('ocr-result');
+const ocrOutputEl = document.getElementById('ocr-output');
+const ocrInfoEl = document.getElementById('ocr-info');
+const ocrDownloadBtn = document.getElementById('ocr-download');
+const ocrCopyBtn = document.getElementById('ocr-copy');
+
+function ocrId() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+ocrFileInput.addEventListener('change', e => addOcrFiles(e.target.files));
+ocrDropzone.addEventListener('dragover', e => { e.preventDefault(); ocrDropzone.classList.add('drag'); });
+ocrDropzone.addEventListener('dragleave', () => ocrDropzone.classList.remove('drag'));
+ocrDropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  ocrDropzone.classList.remove('drag');
+  if (e.dataTransfer.files.length) addOcrFiles(e.dataTransfer.files);
+});
+
+async function addOcrFiles(fileList) {
+  const incoming = Array.from(fileList);
+  for (const file of incoming) {
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      await expandOcrPdf(file);
+    } else if (file.type.startsWith('image/')) {
+      ocrJobs.push({ id: ocrId(), label: file.name, source: { type: 'image', file }, status: 'wait', progress: 0 });
+    }
+  }
+  renderOcrQueue();
+  ocrStartBtn.disabled = ocrJobs.filter(j => j.status === 'wait').length === 0;
+}
+
+async function expandOcrPdf(file) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  for (let p = 1; p <= pdf.numPages; p++) {
+    ocrJobs.push({ id: ocrId(), label: file.name + ' — p.' + p, source: { type: 'pdfpage', pdf, pageNum: p }, status: 'wait', progress: 0 });
+  }
+}
+
+function renderOcrQueue() {
+  if (ocrJobs.length === 0) { ocrQueueEl.style.display = 'none'; return; }
+  ocrQueueEl.style.display = 'block';
+  ocrQueueEl.innerHTML = ocrJobs.map((j, i) => `
+    <div class="ocr-row">
+      <span class="ocr-idx">${String(i + 1).padStart(3, '0')}</span>
+      <span class="ocr-name">${j.label}</span>
+      <span class="ocr-mini-track"><span class="ocr-mini-fill" style="width:${Math.round(j.progress * 100)}%"></span></span>
+      <span class="ocr-status ${j.status}">${ocrStatusText(j)}</span>
+    </div>
+  `).join('');
+}
+
+function ocrStatusText(j) {
+  if (j.status === 'wait') return 'queued';
+  if (j.status === 'run') return Math.round(j.progress * 100) + '%';
+  if (j.status === 'done') return 'done';
+  if (j.status === 'err') return 'failed';
+  return '';
+}
+
+function updateOcrOverall() {
+  const total = ocrJobs.length;
+  const pct = total ? (ocrJobs.reduce((s, j) => s + j.progress, 0) / total) * 100 : 0;
+  ocrProgressFill.style.width = pct + '%';
+}
+
+function renderOcrOutput() {
+  const finished = ocrJobs.filter(j => j.status === 'done');
+  if (finished.length === 0) return;
+  ocrOutputEl.innerHTML = finished.map(j =>
+    '<div style="color:#c6a85c;font-weight:700;margin:10px 0 4px;">— ' + escapeOcrHtml(j.label) + ' —</div>' +
+    escapeOcrHtml(j.text || '(no text detected)')
+  ).join('');
+  ocrResultBox.style.display = 'block';
+  const doneCount = ocrJobs.filter(j => j.status === 'done' || j.status === 'err').length;
+  ocrInfoEl.innerHTML = 'Pages processed: <span>' + doneCount + ' / ' + ocrJobs.length + '</span>';
+}
+
+function escapeOcrHtml(s) {
+  return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+}
+
+async function pageToOcrImage(job) {
+  if (job.source.type === 'image') return job.source.file;
+  const page = await job.source.pdf.getPage(job.source.pageNum);
+  const viewport = page.getViewport({ scale: 2.0 });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  const ctx = canvas.getContext('2d');
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+  canvas.width = 0; canvas.height = 0;
+  return blob;
+}
+
+async function ensureOcrPool(lang) {
+  await destroyOcrPool();
+  for (let i = 0; i < OCR_POOL_SIZE; i++) {
+    const worker = await Tesseract.createWorker(lang, 1, {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          const job = ocrCurrentJobByWorker.get(worker);
+          if (job) {
+            job.progress = m.progress;
+            renderOcrQueue();
+            updateOcrOverall();
+          }
+        }
+      }
+    });
+    ocrWorkerPool.push(worker);
+  }
+}
+
+async function destroyOcrPool() {
+  for (const w of ocrWorkerPool) { try { await w.terminate(); } catch (e) {} }
+  ocrWorkerPool = [];
+}
+
+async function startOcr() {
+  ocrRunning = true;
+  ocrCancelRequested = false;
+  ocrStartBtn.style.display = 'none';
+  ocrActiveRow.style.display = 'flex';
+  ocrClearBtn.disabled = true;
+  ocrProgressTrack.style.display = 'block';
+  ocrResultBox.style.display = 'none';
+  ocrOutputEl.innerHTML = '';
+
+  const lang = document.getElementById('ocr-lang').value;
+  setStatus('ocr-status', 'loading', 'Warming up the OCR engine…');
+  await ensureOcrPool(lang);
+  setStatus('ocr-status', 'loading', 'Scanning pages…');
+
+  const pending = ocrJobs.filter(j => j.status === 'wait');
+  let cursor = 0;
+
+  async function workerLoop(worker) {
+    while (cursor < pending.length) {
+      if (ocrCancelRequested) return;
+      const job = pending[cursor++];
+      job.status = 'run';
+      ocrCurrentJobByWorker.set(worker, job);
+      renderOcrQueue();
+      try {
+        const img = await pageToOcrImage(job);
+        const result = await worker.recognize(img);
+        job.text = result.data.text;
+        job.progress = 1;
+        job.status = 'done';
+      } catch (err) {
+        job.status = 'err';
+        job.progress = 1;
+        job.text = '';
+      }
+      ocrCurrentJobByWorker.delete(worker);
+      renderOcrQueue();
+      updateOcrOverall();
+      renderOcrOutput();
+    }
+  }
+
+  await Promise.all(ocrWorkerPool.map(w => workerLoop(w)));
+  await destroyOcrPool();
+
+  ocrRunning = false;
+  ocrActiveRow.style.display = 'none';
+  ocrClearBtn.disabled = false;
+
+  if (ocrCancelRequested) {
+    clearStatus('ocr-status');
+    setStatus('ocr-status', 'error', '✕ Scan cancelled.');
+    ocrStartBtn.style.display = 'flex';
+    ocrStartBtn.disabled = ocrJobs.filter(j => j.status === 'wait').length === 0;
+  } else {
+    clearStatus('ocr-status');
+    setStatus('ocr-status', 'success', '✓ Done — text extracted from ' + ocrJobs.length + ' page' + (ocrJobs.length === 1 ? '' : 's') + '.');
+  }
+}
+
+ocrCancelBtn.addEventListener('click', () => {
+  ocrCancelRequested = true;
+  ocrCancelBtn.disabled = true;
+  setStatus('ocr-status', 'loading', 'Cancelling…');
+});
+
+ocrClearBtn.addEventListener('click', () => {
+  ocrJobs = [];
+  ocrFileInput.value = '';
+  renderOcrQueue();
+  updateOcrOverall();
+  ocrProgressTrack.style.display = 'none';
+  ocrResultBox.style.display = 'none';
+  ocrOutputEl.innerHTML = '';
+  clearStatus('ocr-status');
+  ocrStartBtn.style.display = 'flex';
+  ocrStartBtn.disabled = true;
+});
+
+function getOcrFullText() {
+  return ocrJobs.filter(j => j.status === 'done')
+    .map(j => '— ' + j.label + ' —\n' + (j.text || ''))
+    .join('\n\n');
+}
+
+ocrDownloadBtn.addEventListener('click', () => {
+  const text = getOcrFullText();
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  ocrDownloadBtn.href = url;
+});
+
+ocrCopyBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(getOcrFullText());
+  ocrCopyBtn.textContent = '✓ Copied!';
+  setTimeout(() => {
+    ocrCopyBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy All';
+  }, 2000);
+});
 </script>
 </body>
 </html>
