@@ -813,6 +813,10 @@ footer a:hover{color:var(--gold);}
         <div class="dropzone-sub">Any mix, any order — up to 100+ pages, processed on your device</div>
       </div>
 
+      <div class="progress-track" id="ocr-load-track" style="display:none;">
+        <div class="progress-fill" id="ocr-load-fill"></div>
+      </div>
+
       <div class="options-row" style="margin-top:16px;">
         <span class="opt-label">Language</span>
         <select class="qual-select" id="ocr-lang">
@@ -831,6 +835,13 @@ footer a:hover{color:var(--gold);}
         </select>
       </div>
 
+      <div class="options-row" style="margin-top:-6px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--muted);font-weight:600;">
+          <input type="checkbox" id="ocr-handwriting" style="accent-color:var(--accent);width:15px;height:15px;cursor:pointer;" />
+          Neat handwriting / notes mode
+        </label>
+      </div>
+
       <div id="ocr-queue" style="display:none;margin-top:4px;max-height:260px;overflow-y:auto;"></div>
 
       <div class="url-row" style="margin-top:16px;">
@@ -839,12 +850,20 @@ footer a:hover{color:var(--gold);}
           START SCANNING
         </button>
       </div>
-      <div class="url-row" id="ocr-active-row" style="display:none;margin-top:10px;">
+      <div class="url-row" id="ocr-cancel-row" style="display:none;margin-top:10px;">
         <button class="dl-link secondary" id="ocr-cancel-btn" style="flex:1;justify-content:center;">Cancel</button>
-        <button class="dl-link secondary" id="ocr-clear-btn" style="flex:1;justify-content:center;">Clear</button>
+      </div>
+      <div class="url-row" id="ocr-clear-row" style="display:none;margin-top:10px;">
+        <button class="dl-link secondary" id="ocr-clear-btn" style="flex:1;justify-content:center;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Clear &amp; start over
+        </button>
       </div>
 
       <div class="status-box" id="ocr-status"></div>
+      <div class="url-row" id="ocr-retry-row" style="display:none;margin-top:10px;">
+        <button class="dl-link secondary" id="ocr-retry-engine-btn" style="flex:1;justify-content:center;">Retry</button>
+      </div>
       <div class="progress-track" id="ocr-progress-track" style="display:none;">
         <div class="progress-fill" id="ocr-progress-fill"></div>
       </div>
@@ -863,13 +882,21 @@ footer a:hover{color:var(--gold);}
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               Copy All
             </button>
+            <button class="dl-link secondary" id="ocr-retry-failed-btn" style="display:none;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Retry failed pages
+            </button>
           </div>
         </div>
       </div>
 
       <div class="notice">
         <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>Runs fully in your browser — your documents are never uploaded anywhere. Large batches (100+ pages) take real time; keep this tab open while it works.</span>
+        <span>Runs fully in your browser — your documents are never uploaded anywhere. Your queue and extracted text are saved locally so a refresh won't lose your work; use "Clear &amp; start over" when you're done. Large batches (100+ pages) take real time; keep this tab open while it works.</span>
+      </div>
+      <div class="notice">
+        <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><b style="color:var(--gold);">On handwriting:</b> this engine is built and trained for printed text. Neat, well-spaced handwriting or block capitals can come through readable with "Notes mode" on, but cursive or messy handwriting will be unreliable — that's a limit of the free on-device model, not a setting we can fully fix. For consistently accurate handwriting recognition you'd need a dedicated handwriting-OCR service (e.g. Google Cloud Vision or Azure's Read API), which requires a paid API key and a server call rather than running for free in the browser.</span>
       </div>
     </div>
 
