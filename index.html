@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
 <style>
 :root {
@@ -1222,7 +1222,7 @@ async function processImage() {
 }
 
 /* ---------- OCR (pdf.js + tesseract.js, runs fully on-device) ---------- */
-pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 let ocrJobs = [];
 let ocrRunning = false;
@@ -1259,12 +1259,23 @@ ocrDropzone.addEventListener('drop', e => {
 
 async function addOcrFiles(fileList) {
   const incoming = Array.from(fileList);
+  let unsupported = 0;
+  clearStatus('ocr-status');
   for (const file of incoming) {
-    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-      await expandOcrPdf(file);
-    } else if (file.type.startsWith('image/')) {
-      ocrJobs.push({ id: ocrId(), label: file.name, source: { type: 'image', file }, status: 'wait', progress: 0 });
+    try {
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        await expandOcrPdf(file);
+      } else if (file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name)) {
+        ocrJobs.push({ id: ocrId(), label: file.name, source: { type: 'image', file }, status: 'wait', progress: 0 });
+      } else {
+        unsupported++;
+      }
+    } catch (err) {
+      setStatus('ocr-status', 'error', '✕ Could not read "' + file.name + '" — the file may be corrupted or password-protected.');
     }
+  }
+  if (unsupported > 0) {
+    setStatus('ocr-status', 'error', '⚠ ' + unsupported + ' file' + (unsupported === 1 ? '' : 's') + ' skipped — only PDF and image files (PNG, JPG, WEBP, GIF, BMP) are supported.');
   }
   renderOcrQueue();
   ocrStartBtn.disabled = ocrJobs.filter(j => j.status === 'wait').length === 0;
@@ -1371,7 +1382,16 @@ async function startOcr() {
 
   const lang = document.getElementById('ocr-lang').value;
   setStatus('ocr-status', 'loading', 'Warming up the OCR engine…');
-  await ensureOcrPool(lang);
+  try {
+    await ensureOcrPool(lang);
+  } catch (err) {
+    setStatus('ocr-status', 'error', '✕ Could not start the OCR engine. Check your connection and try again.');
+    ocrRunning = false;
+    ocrStartBtn.style.display = 'flex';
+    ocrActiveRow.style.display = 'none';
+    ocrClearBtn.disabled = false;
+    return;
+  }
   setStatus('ocr-status', 'loading', 'Scanning pages…');
 
   const pending = ocrJobs.filter(j => j.status === 'wait');
