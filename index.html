@@ -1254,6 +1254,16 @@ async function processImage() {
 }
 
 /* ---------- OCR (pdf.js + tesseract.js, runs fully on-device, persists locally) ---------- */
+window.addEventListener('unhandledrejection', e => {
+  console.error('OCR unhandled error:', e.reason);
+  const panel = document.getElementById('panel-ocr');
+  const box = document.getElementById('ocr-status');
+  if (panel && panel.classList.contains('active') && box) {
+    box.className = 'status-box error';
+    box.innerHTML = '✕ Something went wrong: ' + ((e.reason && e.reason.message) || String(e.reason));
+  }
+});
+
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 const OCR_POOL_SIZE = 2;
@@ -1601,6 +1611,19 @@ async function pageToOcrImage(job) {
 }
 
 /* ----- OCR engine pool with retry (handles slow / flaky connections) ----- */
+const TESSERACT_WORKER_PATH = 'https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.4/dist/worker.min.js';
+const TESSERACT_CORE_PATH = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0';
+const TESSERACT_LANG_PATH = 'https://tessdata.projectnaptha.com/4.0.0';
+const OCR_ENGINE_TIMEOUT_MS = 30000;
+const OCR_PAGE_TIMEOUT_MS = 90000;
+
+function withTimeout(promise, ms, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(message || 'timed_out')), ms))
+  ]);
+}
+
 function friendlyEngineStatus(status) {
   if (status.includes('language')) return 'Downloading language data';
   if (status.includes('core')) return 'Loading OCR engine';
@@ -1619,20 +1642,27 @@ function updateEngineWarmupProgress(slot, status, progress) {
 async function createWorkerWithRetry(lang, slot, attempt = 1) {
   const maxAttempts = 4;
   try {
-    const worker = await Tesseract.createWorker(lang, 1, {
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          const job = ocrCurrentJobByWorker.get(worker);
-          if (job) {
-            job.progress = m.progress;
-            renderOcrQueue();
-            updateOcrOverall();
+    const worker = await withTimeout(
+      Tesseract.createWorker(lang, 1, {
+        workerPath: TESSERACT_WORKER_PATH,
+        corePath: TESSERACT_CORE_PATH,
+        langPath: TESSERACT_LANG_PATH,
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            const job = ocrCurrentJobByWorker.get(worker);
+            if (job) {
+              job.progress = m.progress;
+              renderOcrQueue();
+              updateOcrOverall();
+            }
+          } else if (typeof m.progress === 'number') {
+            updateEngineWarmupProgress(slot, m.status || '', m.progress);
           }
-        } else if (typeof m.progress === 'number') {
-          updateEngineWarmupProgress(slot, m.status || '', m.progress);
         }
-      }
-    });
+      }),
+      OCR_ENGINE_TIMEOUT_MS,
+      'Engine load timed out'
+    );
     return worker;
   } catch (err) {
     if (attempt >= maxAttempts) throw err;
@@ -1700,7 +1730,7 @@ async function startOcr() {
       renderOcrQueue();
       try {
         const img = await pageToOcrImage(job);
-        const result = await worker.recognize(img);
+        const result = await withTimeout(worker.recognize(img), OCR_PAGE_TIMEOUT_MS, 'Page timed out');
         job.text = result.data.text;
         job.progress = 1;
         job.status = 'done';
@@ -1755,7 +1785,7 @@ async function retrySingleJob(jobId) {
     hideLoadProgress();
     ocrCurrentJobByWorker.set(worker, job);
     const img = await pageToOcrImage(job);
-    const result = await worker.recognize(img);
+    const result = await withTimeout(worker.recognize(img), OCR_PAGE_TIMEOUT_MS, 'Page timed out');
     job.text = result.data.text;
     job.progress = 1;
     job.status = 'done';
