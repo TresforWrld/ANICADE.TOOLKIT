@@ -1,2414 +1,1864 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ANICADE.CV — Professional CV Generator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Roboto+Slab:wght@400;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    /* ── TOKENS ─────────────────────────────────────────────── */
-    :root {
-      --primary: #0b1c2d;
-      --panel: rgba(15, 30, 48, 0.92);
-      --panel-strong: #102237;
-      --accent: #00bfff;
-      --gold: #c6a85c;
-      --text: #f5f7fa;
-      --muted: #94a3b8;
-      --line: rgba(255, 255, 255, 0.09);
-      --field: rgba(255, 255, 255, 0.055);
-      --danger: #f97373;
-      --success: #34d399;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANICADE TOOLKIT — Links &amp; Image Tools</title>
+<link rel="icon" type="image/png" href="https://i.imgur.com/RcBmjWM.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
+<style>
+:root {
+  --primary: #0b1c2d;
+  --panel: rgba(15,30,48,0.92);
+  --panel-strong: #102237;
+  --accent: #00bfff;
+  --gold: #c6a85c;
+  --text: #f5f7fa;
+  --muted: #94a3b8;
+  --line: rgba(255,255,255,0.09);
+  --field: rgba(255,255,255,0.055);
+  --danger: #f97373;
+  --success: #34d399;
+}
 
-    /* ── RESET ──────────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, rgba(0,191,255,.16), transparent 32rem),
-        radial-gradient(circle at 78% 12%, rgba(198,168,92,.12), transparent 30rem),
-        var(--primary);
-      color: var(--text);
-      font-family: "Rajdhani", sans-serif;
-      overflow-x: hidden;
-    }
-    button, input, textarea, select { font: inherit; }
-    button, a { -webkit-tap-highlight-color: transparent; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
 
-    /* ── ANIMATED RINGS ─────────────────────────────────────── */
-    .rings-bg {
-      position: fixed; inset: 0; z-index: 0;
-      pointer-events: none; overflow: hidden;
-    }
-    .rings-bg span {
-      position: absolute; top: 50%; left: 50%;
-      border: 1.5px solid transparent; border-radius: 38% 62% 63% 37%/41% 44% 56% 59%;
-    }
-    .rings-bg span:nth-child(1) {
-      width: 920px; height: 920px; margin: -460px 0 0 -460px;
-      border-color: rgba(0,191,255,.07);
-      animation: spin 28s linear infinite;
-    }
-    .rings-bg span:nth-child(2) {
-      width: 620px; height: 620px; margin: -310px 0 0 -310px;
-      border-color: rgba(198,168,92,.07);
-      animation: spinR 18s linear infinite;
-    }
-    .rings-bg span:nth-child(3) {
-      width: 410px; height: 410px; margin: -205px 0 0 -205px;
-      border-color: rgba(0,191,255,.04);
-      animation: spin 38s linear infinite reverse;
-    }
-    @keyframes spin  { to { transform: rotate(360deg);  } }
-    @keyframes spinR { to { transform: rotate(-360deg); } }
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(0,191,255,0.16), transparent 32rem),
+    radial-gradient(circle at 78% 12%, rgba(198,168,92,0.12), transparent 30rem),
+    var(--primary);
+  color: var(--text);
+  font-family: "Rajdhani", sans-serif;
+  overflow-x: hidden;
+}
 
-    /* ── TOP BAR ────────────────────────────────────────────── */
-    .top-bar {
-      position: sticky; top: 0; z-index: 50;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 20px; align-items: center;
-      padding: 13px 28px;
-      background: rgba(11,28,45,.92);
-      border-bottom: 1px solid rgba(198,168,92,.18);
-      backdrop-filter: blur(18px);
-    }
-    .brand {
-      display: inline-flex; align-items: center; gap: 10px;
-      color: var(--gold);
-      font-family: "Orbitron", sans-serif;
-      font-size: 14px; font-weight: 900; letter-spacing: 1.5px;
-      text-decoration: none;
-    }
-    .brand-mark {
-      display: grid; width: 34px; height: 34px;
-      place-items: center;
-      border: 1px solid rgba(198,168,92,.45);
-      border-radius: 50%; color: var(--accent);
-      font-size: 15px; font-weight: 900;
-      box-shadow: 0 0 22px rgba(0,191,255,.16);
-    }
-    .dot { color: var(--accent); }
-    .main-tabs {
-      display: flex; justify-content: center; gap: 6px;
-    }
-    .tab-btn {
-      padding: 8px 16px; border-radius: 8px; cursor: pointer;
-      border: 1px solid rgba(255,255,255,.11);
-      background: rgba(255,255,255,.04);
-      color: var(--muted);
-      font-weight: 700; font-size: 12px;
-      letter-spacing: .6px; text-transform: uppercase;
-      transition: all .2s ease;
-    }
-    .tab-btn:hover { border-color: rgba(0,191,255,.4); color: var(--text); transform: translateY(-1px); }
-    .tab-btn.active {
-      background: rgba(0,191,255,.13);
-      border-color: rgba(0,191,255,.5);
-      color: var(--accent);
-    }
-    .site-link {
-      padding: 9px 15px; border-radius: 8px; text-decoration: none;
-      border: 1px solid rgba(255,255,255,.11);
-      background: rgba(255,255,255,.04);
-      color: var(--gold); font-weight: 700; font-size: 13px;
-      transition: all .2s ease;
-    }
-    .site-link:hover { border-color: rgba(198,168,92,.45); transform: translateY(-1px); }
+button,input,textarea,select{font:inherit;}
+button,a{-webkit-tap-highlight-color:transparent;}
 
-    /* ── MAIN / PANELS ──────────────────────────────────────── */
-    main { position: relative; z-index: 1; }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+/* RINGS */
+.rings-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.rings-bg span{
+  position:absolute;top:50%;left:50%;
+  border:1.5px solid transparent;
+  border-radius:38% 62% 63% 37%/41% 44% 56% 59%;
+}
+.rings-bg span:nth-child(1){
+  width:920px;height:920px;margin:-460px 0 0 -460px;
+  border-color:rgba(0,191,255,0.07);
+  animation:spin 28s linear infinite;
+}
+.rings-bg span:nth-child(2){
+  width:620px;height:620px;margin:-310px 0 0 -310px;
+  border-color:rgba(198,168,92,0.07);
+  animation:spinR 18s linear infinite;
+}
+.rings-bg span:nth-child(3){
+  width:410px;height:410px;margin:-205px 0 0 -205px;
+  border-color:rgba(0,191,255,0.04);
+  animation:spin 38s linear infinite reverse;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes spinR{to{transform:rotate(-360deg);}}
 
-    /* ── BUILDER SHELL ──────────────────────────────────────── */
-    .app-shell {
-      display: none;
-      grid-template-columns: minmax(340px, 480px) minmax(0, 1fr);
-      min-height: calc(100vh - 62px);
-    }
-    .app-shell.active { display: grid; }
+/* TOP BAR */
+.top-bar{
+  position:sticky;top:0;z-index:50;
+  display:grid;grid-template-columns:auto 1fr auto;
+  gap:20px;align-items:center;
+  padding:13px 28px;
+  background:rgba(11,28,45,0.92);
+  border-bottom:1px solid rgba(198,168,92,0.18);
+  backdrop-filter:blur(18px);
+}
+.brand{
+  display:inline-flex;align-items:center;gap:10px;
+  color:var(--gold);
+  font-family:"Orbitron",sans-serif;
+  font-size:14px;font-weight:900;letter-spacing:1.5px;
+  text-decoration:none;
+}
+.brand-mark{
+  display:grid;width:34px;height:34px;place-items:center;
+  border:1px solid rgba(198,168,92,0.45);
+  border-radius:50%;color:var(--accent);
+  font-size:15px;font-weight:900;
+  box-shadow:0 0 22px rgba(0,191,255,0.16);
+  overflow:hidden;
+  background:rgba(255,255,255,0.02);
+}
+.brand-mark img{width:100%;height:100%;object-fit:cover;display:block;}
+.dot{color:var(--accent);}
 
-    /* ── CONTROL PANEL (LEFT) ───────────────────────────────── */
-    .control-panel {
-      padding: 24px;
-      border-right: 1px solid var(--line);
-      background: rgba(11,28,45,.5);
-      overflow-y: auto;
-      max-height: calc(100vh - 62px);
-    }
-    .panel-head {
-      padding: 22px; margin-bottom: 14px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.18);
-    }
-    .eyebrow {
-      margin: 0 0 7px;
-      color: var(--accent);
-      font-family: "Orbitron", sans-serif;
-      font-size: 10px; font-weight: 700;
-      letter-spacing: 2.6px; text-transform: uppercase;
-    }
-    h1, h2, h3 { margin: 0; font-family: "Orbitron", sans-serif; letter-spacing: 0; }
-    .panel-head h1 {
-      color: var(--gold); font-size: 26px; line-height: 1.1;
-    }
-    .panel-head p { color: var(--muted); line-height: 1.55; margin: 10px 0 0; }
+.nav-links{display:flex;gap:6px;justify-content:center;}
+.nav-link{
+  padding:8px 16px;border-radius:8px;
+  border:1px solid rgba(255,255,255,0.11);
+  background:rgba(255,255,255,0.04);
+  color:var(--muted);font-weight:700;font-size:12px;
+  letter-spacing:0.6px;text-transform:uppercase;
+  text-decoration:none;
+  transition:all 0.2s ease;
+}
+.nav-link:hover{border-color:rgba(0,191,255,0.4);color:var(--text);transform:translateY(-1px);}
 
-    /* progress */
-    .progress-card {
-      display: grid; gap: 10px;
-      margin-bottom: 16px; padding: 16px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-    }
-    .progress-row { display: flex; justify-content: space-between; align-items: center; }
-    .progress-card .pct {
-      color: var(--gold);
-      font-family: "Orbitron", sans-serif;
-      font-size: 22px; font-weight: 900;
-    }
-    .progress-card .plabel { color: var(--muted); font-size: 13px; font-weight: 600; }
-    .progress-track {
-      height: 6px; overflow: hidden;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-    }
-    .progress-fill {
-      display: block; width: 0; height: 100%;
-      background: linear-gradient(90deg, var(--gold), var(--accent));
-      transition: width .3s ease;
-    }
+.top-actions{display:flex;align-items:center;gap:8px;}
+.site-link{
+  padding:9px 15px;border-radius:8px;text-decoration:none;
+  border:1px solid rgba(255,255,255,0.11);
+  background:rgba(255,255,255,0.04);
+  color:var(--gold);font-weight:700;font-size:13px;
+  transition:all 0.2s ease;
+}
+.site-link:hover{border-color:rgba(198,168,92,0.45);transform:translateY(-1px);}
 
-    /* draft banner */
-    .draft-banner {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 16px; padding: 14px 16px;
-      border: 1px solid rgba(0,191,255,.32);
-      border-radius: 10px;
-      background: rgba(0,191,255,.08);
-      color: var(--text); font-size: 13px; line-height: 1.5;
-    }
-    .draft-banner[hidden] { display: none; }
-    .draft-banner-actions { display: flex; gap: 8px; flex-shrink: 0; }
-    .draft-banner-actions button {
-      padding: 7px 13px; border-radius: 7px; cursor: pointer; font-weight: 700; font-size: 12px;
-      border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06); color: var(--text);
-      touch-action: manipulation;
-    }
-    .draft-banner-actions .restore-btn {
-      border-color: rgba(0,191,255,.45); background: rgba(0,191,255,.16); color: var(--accent);
-    }
-    .draft-banner-actions .discard-btn:hover { border-color: rgba(249,115,115,.4); color: var(--danger); }
+/* MAIN CONTENT */
+main{position:relative;z-index:1;}
 
-    /* form / details */
-    form { display: grid; gap: 12px; }
-    details {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    summary {
-      display: flex; align-items: center; gap: 10px;
-      padding: 0 18px; min-height: 54px;
-      color: var(--text);
-      font-family: "Orbitron", sans-serif;
-      font-size: 12px; font-weight: 700; letter-spacing: .4px;
-      cursor: pointer; list-style: none;
-      border-bottom: 1px solid transparent;
-      transition: background .15s;
-    }
-    details[open] summary {
-      border-bottom-color: var(--line);
-      background: rgba(0,191,255,.04);
-    }
-    summary::after {
-      content: "›"; margin-left: auto;
-      font-size: 18px; color: var(--muted);
-      transform: rotate(90deg);
-      transition: transform .2s ease;
-    }
-    details[open] summary::after { transform: rotate(270deg); }
-    .section-body { padding: 16px 18px 18px; }
+/* HERO */
+.hero{
+  text-align:center;
+  padding:5rem 2rem 2.5rem;
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:"Orbitron",sans-serif;
+  font-size:10px;font-weight:700;letter-spacing:2.6px;
+  text-transform:uppercase;color:var(--accent);
+  border:1px solid rgba(0,191,255,0.25);
+  padding:7px 16px;border-radius:100px;
+  background:rgba(0,191,255,0.06);
+  margin-bottom:1.5rem;
+}
+.hero-dot{
+  width:6px;height:6px;
+  background:var(--accent);border-radius:50%;
+  animation:pulsedot 2s ease-in-out infinite;
+}
+@keyframes pulsedot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.7);}}
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 12px;
-    }
-    label {
-      display: grid; gap: 6px;
-      color: rgba(245,247,250,.82);
-      font-size: 13px; font-weight: 700;
-    }
-    label.full { grid-column: 1 / -1; }
-    .required-mark { color: var(--danger); margin-left: 2px; }
+.hero h1{
+  font-family:"Orbitron",sans-serif;
+  font-size:clamp(1.8rem,5vw,3.2rem);
+  font-weight:900;line-height:1.1;
+  letter-spacing:-0.01em;
+  margin-bottom:1rem;
+  color:var(--text);
+}
+.hero h1 .gold{color:var(--gold);}
+.hero-sub{
+  color:var(--muted);font-size:1.1rem;
+  max-width:520px;margin:0 auto 2.5rem;
+  line-height:1.6;font-weight:500;
+}
 
-    /* profile photo upload */
-    .photo-upload-row {
-      display: flex; align-items: center; gap: 14px;
-      margin-top: 14px; padding-top: 14px;
-      border-top: 1px solid rgba(255,255,255,.08);
-    }
-    .photo-preview {
-      width: 56px; height: 56px; border-radius: 50%;
-      overflow: hidden; flex-shrink: 0;
-      border: 1px solid rgba(198,168,92,.4);
-      box-shadow: 0 0 16px rgba(0,191,255,.18);
-    }
-    .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .photo-upload-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .photo-upload-label {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 8px 13px; border-radius: 8px; cursor: pointer;
-      border: 1px solid rgba(0,191,255,.3);
-      background: rgba(0,191,255,.07);
-      color: var(--accent); font-size: 12px; font-weight: 700;
-      transition: all .2s;
-      touch-action: manipulation;
-      margin: 0;
-    }
-    .photo-upload-label:hover { background: rgba(0,191,255,.14); }
-    .photo-remove-btn {
-      padding: 8px 12px; border-radius: 8px; cursor: pointer;
-      border: 1px solid rgba(249,115,115,.3);
-      background: rgba(249,115,115,.08);
-      color: var(--danger); font-size: 12px; font-weight: 700;
-      transition: all .2s;
-      touch-action: manipulation;
-    }
-    .photo-remove-btn:hover { background: rgba(249,115,115,.18); }
-    input, textarea, select {
-      width: 100%; min-width: 0;
-      border: 1px solid rgba(255,255,255,.11);
-      border-radius: 8px;
-      background: var(--field);
-      color: var(--text);
-      padding: 11px 12px;
-      outline: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    textarea { resize: vertical; }
-    select option { color: #111827; }
-    input:focus, textarea:focus, select:focus {
-      border-color: rgba(0,191,255,.55);
-      box-shadow: 0 0 0 3px rgba(0,191,255,.1);
-    }
+/* TOOL SWITCHER TABS */
+.tab-strip{
+  display:flex;justify-content:center;gap:8px;
+  margin-bottom:2.5rem;flex-wrap:wrap;
+}
+.tab-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 20px;border-radius:100px;cursor:pointer;
+  border:1px solid rgba(255,255,255,0.11);
+  background:rgba(255,255,255,0.04);
+  color:var(--muted);font-weight:700;font-size:12.5px;
+  font-family:"Orbitron",sans-serif;letter-spacing:0.08em;
+  text-transform:uppercase;
+  transition:all 0.2s ease;
+}
+.tab-btn:hover{border-color:rgba(0,191,255,0.35);color:var(--text);}
+.tab-btn.active{
+  background:linear-gradient(135deg,rgba(198,168,92,0.22),rgba(0,191,255,0.17));
+  border-color:rgba(198,168,92,0.45);color:var(--gold);
+}
 
-    /* validation */
-    .input-invalid {
-      border-color: rgba(249,115,115,.75) !important;
-      box-shadow: 0 0 0 3px rgba(249,115,115,.14) !important;
-    }
-    .field-error-msg {
-      color: var(--danger);
-      font-size: 11.5px;
-      font-weight: 600;
-      margin-top: -2px;
-    }
+/* TOOL CARD */
+.dl-wrap{
+  position:relative;z-index:1;
+  max-width:760px;margin:0 auto;
+  padding:0 1.5rem 4rem;
+}
+.dl-card{
+  background:var(--panel);
+  border:1px solid rgba(198,168,92,0.18);
+  border-radius:12px;
+  padding:28px;
+  box-shadow:0 18px 60px rgba(0,0,0,0.25);
+  position:relative;overflow:hidden;
+}
+.dl-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:0.5;
+}
 
-    /* repeat sections */
-    .repeat-head {
-      display: flex; justify-content: space-between;
-      align-items: center; gap: 10px;
-      margin-bottom: 12px;
-    }
-    .repeat-head p { margin: 0; color: var(--muted); font-size: 13px; }
-    .mini-btn {
-      padding: 8px 12px; border-radius: 8px; cursor: pointer;
-      border: 1px solid rgba(198,168,92,.4);
-      background: rgba(198,168,92,.08);
-      color: var(--gold); font-weight: 800; font-size: 12px;
-      white-space: nowrap; transition: all .2s;
-      touch-action: manipulation;
-    }
-    .mini-btn:hover { background: rgba(198,168,92,.16); transform: translateY(-1px); }
-    .mini-btn:active { transform: scale(.97); }
-    .repeat-list { display: grid; gap: 12px; }
-    .repeat-item {
-      position: relative; padding: 14px;
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 8px;
-      background: rgba(255,255,255,.03);
-    }
-    .remove-btn {
-      position: absolute; top: 8px; right: 8px;
-      padding: 7px 10px; border-radius: 6px; cursor: pointer;
-      border: 1px solid rgba(249,115,115,.3);
-      background: rgba(249,115,115,.08);
-      color: var(--danger); font-size: 11px; font-weight: 800;
-      transition: all .2s;
-      touch-action: manipulation;
-      min-height: 30px;
-    }
-    .remove-btn:hover { background: rgba(249,115,115,.18); }
-    .remove-btn:active { transform: scale(.96); }
-    .repeat-item .form-grid { padding-top: 30px; }
+.tool-panel{display:none;}
+.tool-panel.active{display:block;}
 
-    /* ai-enhance inline btn */
-    .ai-enhance-row {
-      display: flex; justify-content: flex-end; margin-top: 8px;
-      gap: 8px;
-    }
-    .ai-enhance-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 11px; border-radius: 6px; cursor: pointer;
-      border: 1px solid rgba(0,191,255,.3);
-      background: rgba(0,191,255,.07);
-      color: var(--accent); font-size: 12px; font-weight: 700;
-      transition: all .2s;
-      touch-action: manipulation;
-    }
-    .ai-enhance-btn:hover { background: rgba(0,191,255,.14); }
-    .ai-enhance-btn:active { transform: scale(.97); }
-    .ai-enhance-btn svg { flex-shrink: 0; }
-    .ai-enhance-btn[disabled] { opacity: .5; cursor: not-allowed; }
-    .spell-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 11px; border-radius: 6px; cursor: pointer;
-      border: 1px solid rgba(198,168,92,.35);
-      background: rgba(198,168,92,.07);
-      color: var(--gold); font-size: 12px; font-weight: 700;
-      transition: all .2s;
-      touch-action: manipulation;
-    }
-    .spell-btn:hover { background: rgba(198,168,92,.15); }
-    .spell-btn[disabled] { opacity: .5; cursor: not-allowed; }
+/* OPTIONS */
+.options-row{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin-bottom:16px;
+}
+.opt-label{
+  font-family:"Orbitron",sans-serif;
+  font-size:9px;font-weight:700;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--muted);
+  white-space:nowrap;
+}
+.qual-select{
+  background:var(--field);
+  border:1px solid rgba(255,255,255,0.11);
+  border-radius:8px;color:var(--text);
+  font-family:"Rajdhani",sans-serif;
+  font-size:14px;font-weight:600;
+  padding:9px 13px;cursor:pointer;outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.qual-select:focus{
+  border-color:rgba(0,191,255,0.55);
+  box-shadow:0 0 0 3px rgba(0,191,255,0.1);
+}
+.qual-select option{color:#111827;}
 
-    /* ── PREVIEW PANEL (RIGHT) ──────────────────────────────── */
-    .preview-panel {
-      min-width: 0; padding: 24px;
-      overflow-y: auto;
-      max-height: calc(100vh - 62px);
-    }
-    .preview-toolbar {
-      display: flex; justify-content: space-between;
-      align-items: center; gap: 16px; flex-wrap: wrap;
-      margin-bottom: 18px; padding: 16px 20px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-    }
-    .preview-toolbar h2 { font-size: 17px; color: var(--gold); }
-    .toolbar-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
-    .tool-btn {
-      padding: 9px 13px; border-radius: 8px; cursor: pointer;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.045);
-      color: var(--muted); font-weight: 800; font-size: 12px;
-      transition: all .2s;
-      touch-action: manipulation;
-      min-height: 40px;
-    }
-    .tool-btn:hover { border-color: rgba(0,191,255,.4); color: var(--text); transform: translateY(-1px); }
-    .tool-btn:active { transform: scale(.97); }
-    .tool-btn.primary {
-      background: linear-gradient(135deg, rgba(198,168,92,.22), rgba(0,191,255,.17));
-      border-color: rgba(198,168,92,.45); color: var(--gold);
-    }
-    .tool-btn[disabled] { opacity: .55; cursor: not-allowed; transform: none !important; }
-    .cv-stage {
-      display: grid; justify-content: safe center;
-      gap: 18px; overflow: auto;
-      padding: 8px 24px 40px;
-    }
+.fmt-row{display:flex;gap:6px;}
+.fmt-btn{
+  padding:8px 14px;border-radius:8px;cursor:pointer;
+  border:1px solid rgba(255,255,255,0.11);
+  background:rgba(255,255,255,0.04);
+  color:var(--muted);font-weight:700;font-size:13px;
+  font-family:"Rajdhani",sans-serif;
+  transition:all 0.2s;
+}
+.fmt-btn:hover{border-color:rgba(0,191,255,0.4);color:var(--text);}
+.fmt-btn.active{
+  background:rgba(0,191,255,0.12);
+  border-color:rgba(0,191,255,0.45);
+  color:var(--accent);
+}
 
-    /* ── CV DOCUMENT STYLES ─────────────────────────────────── */
-    .cv-document {
-      --cv-accent: #0f766e;
-      --cv-font: "Inter";
-      width: 210mm; min-height: 297mm;
-      color: #1a2332;
-      font-family: var(--cv-font), Arial, sans-serif;
-    }
-    .cv-page {
-      width: 210mm; min-height: 297mm;
-      margin-bottom: 20px;
-      background: #ffffff;
-      box-shadow: 0 20px 60px rgba(0,0,0,.3);
-      page-break-after: always;
-    }
-    .cv-page:last-child { page-break-after: auto; }
+/* URL ROW */
+.url-row{display:flex;gap:10px;}
+.url-input{
+  flex:1;min-width:0;
+  background:var(--field);
+  border:1px solid rgba(255,255,255,0.11);
+  border-radius:8px;color:var(--text);
+  font-family:"Rajdhani",sans-serif;font-size:15px;font-weight:500;
+  padding:13px 15px;outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.url-input::placeholder{color:var(--muted);}
+.url-input:focus{
+  border-color:rgba(0,191,255,0.55);
+  box-shadow:0 0 0 3px rgba(0,191,255,0.1);
+}
+.dl-btn{
+  padding:0 22px;height:50px;
+  background:linear-gradient(135deg,rgba(198,168,92,0.22),rgba(0,191,255,0.17));
+  border:1px solid rgba(198,168,92,0.45);
+  border-radius:8px;color:var(--gold);
+  font-family:"Orbitron",sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:0.08em;cursor:pointer;white-space:nowrap;
+  transition:all 0.2s;display:flex;align-items:center;gap:8px;
+}
+.dl-btn:hover{
+  background:linear-gradient(135deg,rgba(198,168,92,0.32),rgba(0,191,255,0.27));
+  transform:translateY(-1px);
+  box-shadow:0 8px 24px rgba(198,168,92,0.15);
+}
+.dl-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
 
-    /* MODERN template */
-    .cv-modern .cv-page {
-      display: grid;
-      grid-template-columns: 38% 62%;
-    }
-    .cv-sidebar {
-      padding: 36px 26px;
-      background: #f0f4f8;
-      border-right: 3px solid var(--cv-accent);
-    }
-    .cv-main { padding: 36px 34px; }
-    .cv-avatar {
-      width: 80px; height: 80px; border-radius: 50%;
-      background: var(--cv-accent);
-      display: grid; place-items: center;
-      margin-bottom: 18px;
-      font-size: 28px; font-weight: 900;
-      color: white; font-family: var(--cv-font);
-    }
-    .cv-name {
-      margin: 0 0 5px;
-      font-size: 28px; line-height: 1.1;
-      font-weight: 800; color: #111827;
-      font-family: var(--cv-font), Arial, sans-serif;
-    }
-    .cv-role {
-      margin: 0 0 20px;
-      font-size: 13px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: .8px;
-      color: var(--cv-accent);
-    }
-    .cv-section { margin-bottom: 22px; break-inside: avoid; }
-    .cv-section h3 {
-      margin: 0 0 10px; padding-bottom: 5px;
-      border-bottom: 2px solid var(--cv-accent);
-      font-family: var(--cv-font), Arial, sans-serif;
-      font-size: 11px; font-weight: 800;
-      letter-spacing: 1px; text-transform: uppercase;
-      color: #111827;
-    }
-    .cv-section p {
-      margin: 0 0 7px;
-      font-size: 12.5px; line-height: 1.6; color: #374151;
-    }
-    .cv-list {
-      display: grid; gap: 5px;
-      margin: 0; padding: 0; list-style: none;
-    }
-    .cv-list li { font-size: 12.5px; line-height: 1.45; color: #374151; }
-    .cv-main .cv-list { padding-left: 16px; list-style: disc; }
-    .cv-item { margin-bottom: 16px; }
-    .cv-item h4 {
-      margin: 0 0 3px; font-size: 14px; font-weight: 700; color: #111827;
-    }
-    .cv-item-role { font-size: 13px; font-weight: 700; color: var(--cv-accent); margin: 0 0 3px; }
-    .cv-meta { color: #6b7280; font-size: 11.5px; font-weight: 600; }
-    .cv-contact-item {
-      display: flex; align-items: flex-start; gap: 8px;
-      font-size: 12px; color: #4b5563; margin-bottom: 8px;
-      word-break: break-all;
-    }
-    .cv-contact-item svg { flex-shrink: 0; margin-top: 1px; }
-    .cv-skill-pill {
-      display: inline-block;
-      padding: 4px 10px; margin: 3px 3px 0 0;
-      border-radius: 4px;
-      background: var(--cv-accent);
-      color: white; font-size: 11px; font-weight: 700;
-    }
-    .cv-footer-note {
-      margin-top: 20px; padding-top: 12px;
-      border-top: 1px solid #e5e7eb;
-      color: #9ca3af; font-size: 10.5px;
-    }
+/* STATUS */
+.status-box{
+  display:none;margin-top:14px;
+  border-radius:8px;padding:13px 16px;
+  font-size:14px;line-height:1.5;font-weight:600;
+  border:1px solid;
+}
+.status-box.loading{
+  background:rgba(0,191,255,0.05);
+  border-color:rgba(0,191,255,0.25);
+  color:var(--accent);
+  display:flex;align-items:center;gap:10px;
+}
+.status-box.success{
+  background:rgba(52,211,153,0.06);
+  border-color:rgba(52,211,153,0.25);
+  color:var(--success);
+  display:block;
+}
+.status-box.error{
+  background:rgba(249,115,115,0.06);
+  border-color:rgba(249,115,115,0.25);
+  color:var(--danger);
+  display:block;
+}
+.spin{
+  width:16px;height:16px;flex-shrink:0;
+  border:2px solid rgba(0,191,255,0.2);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 0.7s linear infinite;
+}
 
-    /* CLASSIC template */
-    .cv-classic .cv-page {
-      display: block; padding: 40px 52px;
-    }
-    .cv-classic .cv-sidebar,
-    .cv-classic .cv-main {
-      padding: 0; background: transparent; border: 0;
-    }
-    .cv-classic .cv-sidebar { margin-bottom: 22px; }
-    .cv-classic .cv-name { font-size: 34px; }
-    .cv-classic .cv-section h3 {
-      font-size: 12px; letter-spacing: 1.5px;
-    }
-    .cv-classic .cv-contact-item { display: inline-flex; margin-right: 20px; }
-    .cv-classic-contacts { display: flex; flex-wrap: wrap; gap: 6px 0; margin-bottom: 18px; }
+/* RESULT */
+.result-box{
+  display:none;margin-top:14px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(198,168,92,0.2);
+  border-radius:10px;overflow:hidden;
+}
+.result-meta{padding:16px 18px;}
+.result-title{
+  font-family:"Orbitron",sans-serif;
+  font-size:13px;font-weight:700;color:var(--gold);
+  margin-bottom:8px;line-height:1.4;
+}
+.result-info{
+  font-size:12px;color:var(--muted);
+  margin-bottom:14px;font-weight:600;
+  letter-spacing:0.03em;
+}
+.result-info span{color:var(--accent);}
+.dl-links{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.dl-link{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 18px;border-radius:8px;
+  font-family:"Rajdhani",sans-serif;font-size:14px;font-weight:700;
+  text-decoration:none;cursor:pointer;border:1px solid;
+  transition:all 0.2s;
+}
+.dl-link.primary{
+  background:linear-gradient(135deg,rgba(0,191,255,0.15),rgba(198,168,92,0.1));
+  border-color:rgba(0,191,255,0.4);color:var(--accent);
+}
+.dl-link.primary:hover{background:linear-gradient(135deg,rgba(0,191,255,0.25),rgba(198,168,92,0.18));}
+.dl-link.secondary{
+  background:rgba(255,255,255,0.04);
+  border-color:rgba(255,255,255,0.12);color:var(--muted);
+}
+.dl-link.secondary:hover{border-color:rgba(198,168,92,0.4);color:var(--gold);}
 
-    /* EXECUTIVE template */
-    .cv-executive .cv-page {
-      display: block;
-    }
-    .cv-executive .cv-header-band {
-      background: #1a2332;
-      padding: 34px 44px;
-      color: white;
-    }
-    .cv-executive .cv-sidebar {
-      background: transparent; border: 0; padding: 0;
-    }
-    .cv-executive .cv-name { color: white; font-size: 32px; }
-    .cv-executive .cv-role { color: var(--cv-accent); margin-bottom: 14px; }
-    .cv-executive .cv-contact-item { color: rgba(255,255,255,.75); }
-    .cv-executive .cv-exec-contacts { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 14px; }
-    .cv-executive .cv-body { display: grid; grid-template-columns: 34% 66%; }
-    .cv-executive .cv-sidebar-inner { padding: 28px 24px 28px 44px; background: #f7f9fb; border-right: 1px solid #e5e7eb; }
-    .cv-executive .cv-main { padding: 28px 36px 28px 28px; }
-    .cv-executive .cv-section h3 {
-      font-size: 11px; letter-spacing: 1.2px;
-      border-bottom: 2px solid var(--cv-accent);
-    }
+.qr-preview{
+  display:flex;justify-content:center;padding:20px 18px 4px;
+}
+.qr-preview img{
+  width:220px;height:220px;border-radius:10px;
+  background:#fff;padding:12px;
+  border:1px solid rgba(198,168,92,0.25);
+}
 
-    /* MINIMAL template */
-    .cv-minimal .cv-page {
-      display: block; padding: 48px 56px;
-    }
-    .cv-minimal .cv-sidebar,
-    .cv-minimal .cv-main { padding: 0; background: transparent; border: 0; }
-    .cv-minimal .cv-header { border-bottom: 1px solid #e5e7eb; padding-bottom: 22px; margin-bottom: 28px; }
-    .cv-minimal .cv-name { font-size: 36px; letter-spacing: -1px; color: #111827; }
-    .cv-minimal .cv-role { color: var(--cv-accent); margin: 6px 0 14px; }
-    .cv-minimal .cv-section h3 {
-      font-size: 10px; letter-spacing: 2px; color: #9ca3af;
-      border-bottom: 1px solid #f3f4f6; margin-bottom: 12px;
-    }
-    .cv-minimal .cv-sidebar { margin-bottom: 24px; }
-    .cv-minimal-contacts { display: flex; flex-wrap: wrap; gap: 6px 20px; }
-    .cv-minimal .cv-contact-item { font-size: 12.5px; }
+/* DROPZONE */
+.dropzone{
+  border:1.5px dashed rgba(198,168,92,0.35);
+  border-radius:10px;
+  padding:32px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.2s;
+  background:rgba(255,255,255,0.02);
+}
+.dropzone:hover,.dropzone.drag{
+  border-color:rgba(0,191,255,0.5);
+  background:rgba(0,191,255,0.04);
+}
+.dropzone svg{color:var(--accent);margin-bottom:10px;}
+.dropzone-text{font-weight:700;font-size:14.5px;color:var(--text);margin-bottom:4px;}
+.dropzone-sub{font-size:12px;color:var(--muted);}
+.dropzone input[type="file"]{display:none;}
 
-    /* ── TEMPLATE GALLERY TAB ───────────────────────────────── */
-    .gallery-panel {
-      min-height: calc(100vh - 62px);
-      padding: 36px 28px;
-    }
-    .gallery-panel .eyebrow { margin-bottom: 6px; }
-    .gallery-panel > h2 {
-      color: var(--gold); font-size: 28px; margin-bottom: 6px;
-    }
-    .gallery-panel > p { color: var(--muted); margin: 0 0 32px; line-height: 1.6; }
-    .template-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 20px;
-    }
-    .template-card {
-      border: 2px solid var(--line);
-      border-radius: 12px; overflow: hidden;
-      background: var(--panel);
-      cursor: default; transition: all .25s;
-    }
-    .template-card:hover { border-color: rgba(0,191,255,.4); transform: translateY(-3px); }
-    .template-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-    .template-thumb {
-      height: 200px; overflow: hidden;
-      background: white; position: relative;
-    }
-    .template-thumb-inner {
-      transform: scale(.38) translateX(-50%) translateY(-50%);
-      transform-origin: 0 0;
-      position: absolute; top: 50%; left: 50%;
-      width: 210mm; pointer-events: none;
-    }
-    .template-info { padding: 16px 18px; }
-    .template-name {
-      color: var(--gold);
-      font-family: "Orbitron", sans-serif;
-      font-size: 12px; font-weight: 700; margin: 0 0 5px;
-    }
-    .template-desc { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
-    .template-accents { display: flex; gap: 8px; flex-wrap: wrap; }
-    .accent-dot {
-      width: 30px; height: 30px; border-radius: 50%;
-      cursor: pointer; border: 3px solid transparent; padding: 0;
-      transition: border-color .2s, transform .15s;
-      touch-action: manipulation;
-    }
-    .accent-dot:active { transform: scale(.9); }
-    .accent-dot.active { border-color: white; box-shadow: 0 0 0 2px rgba(0,0,0,.2); }
-    .select-template-btn {
-      display: block; width: 100%;
-      margin-top: 12px; padding: 11px;
-      border-radius: 8px; cursor: pointer; text-align: center;
-      border: 1px solid rgba(0,191,255,.35);
-      background: rgba(0,191,255,.08);
-      color: var(--accent); font-weight: 800; font-size: 12px;
-      transition: all .2s;
-      touch-action: manipulation;
-      min-height: 40px;
-    }
-    .select-template-btn:hover { background: rgba(0,191,255,.18); }
-    .select-template-btn:active { transform: scale(.98); }
-    .select-template-btn.selected-state {
-      background: rgba(0,191,255,.2);
-      border-color: var(--accent);
-    }
+.file-chip{
+  display:none;align-items:center;gap:10px;
+  margin-top:14px;padding:10px 14px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(198,168,92,0.2);
+  border-radius:8px;
+}
+.file-chip img{width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;}
+.file-chip-info{flex:1;min-width:0;}
+.file-chip-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-chip-size{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.file-chip-remove{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:4px;border-radius:6px;flex-shrink:0;
+}
+.file-chip-remove:hover{color:var(--danger);}
 
-    /* ── RECENT TAB ─────────────────────────────────────────── */
-    .recent-panel {
-      min-height: calc(100vh - 62px);
-      padding: 36px 28px;
-    }
-    .recent-panel > h2 { color: var(--gold); margin-bottom: 6px; font-size: 26px; }
-    .recent-panel > p { color: var(--muted); margin: 0 0 24px; }
-    .recent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 16px; }
-    .recent-card {
-      padding: 18px; border-radius: 10px;
-      border: 1px solid var(--line);
-      background: var(--panel);
-      display: grid; gap: 10px;
-    }
-    .recent-card h4 { margin: 0; color: var(--text); font-size: 15px; }
-    .recent-card .rc-meta { color: var(--muted); font-size: 12px; }
-    .recent-actions { display: flex; gap: 8px; }
-    .rc-load-btn, .rc-del-btn {
-      flex: 1; padding: 9px; border-radius: 7px; cursor: pointer;
-      font-size: 12px; font-weight: 700; border: 1px solid;
-      transition: all .2s;
-      touch-action: manipulation;
-      min-height: 38px;
-    }
-    .rc-load-btn {
-      border-color: rgba(0,191,255,.35);
-      background: rgba(0,191,255,.07); color: var(--accent);
-    }
-    .rc-load-btn:hover { background: rgba(0,191,255,.18); }
-    .rc-del-btn {
-      border-color: rgba(249,115,115,.3);
-      background: rgba(249,115,115,.07); color: var(--danger);
-    }
-    .rc-del-btn:hover { background: rgba(249,115,115,.18); }
-    .save-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .save-name-input {
-      flex: 1; min-width: 180px; padding: 10px 13px; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.11);
-      background: var(--field); color: var(--text); outline: none;
-    }
-    .save-name-input:focus { border-color: rgba(0,191,255,.55); }
-    .save-cv-btn {
-      padding: 10px 18px; border-radius: 8px; cursor: pointer;
-      border: 1px solid rgba(198,168,92,.4);
-      background: rgba(198,168,92,.1); color: var(--gold);
-      font-weight: 800; font-size: 13px; transition: all .2s;
-      touch-action: manipulation;
-      min-height: 42px;
-    }
-    .save-cv-btn:hover { background: rgba(198,168,92,.2); }
-    .empty-recent {
-      padding: 40px; text-align: center;
-      border: 1px dashed rgba(255,255,255,.12);
-      border-radius: 12px; color: var(--muted);
-    }
-    .storage-warning {
-      padding: 14px 16px; margin-bottom: 18px;
-      border: 1px solid rgba(249,115,115,.3);
-      border-radius: 10px;
-      background: rgba(249,115,115,.08);
-      color: var(--text); font-size: 13px; line-height: 1.6;
-    }
-    .storage-warning[hidden] { display: none; }
+/* IMAGE TOOL CONTROLS */
+.itool-tabs{display:flex;gap:6px;margin-bottom:16px;}
+.itool-tab{
+  flex:1;padding:9px 10px;border-radius:8px;cursor:pointer;text-align:center;
+  border:1px solid rgba(255,255,255,0.11);
+  background:rgba(255,255,255,0.04);
+  color:var(--muted);font-weight:700;font-size:12px;
+  font-family:"Orbitron",sans-serif;letter-spacing:0.05em;
+  transition:all 0.2s;
+}
+.itool-tab:hover{border-color:rgba(0,191,255,0.35);color:var(--text);}
+.itool-tab.active{
+  background:linear-gradient(135deg,rgba(198,168,92,0.22),rgba(0,191,255,0.17));
+  border-color:rgba(198,168,92,0.45);color:var(--gold);
+}
+.itool-opts{display:none;}
+.itool-opts.active{display:flex;}
+.slider-row{display:flex;align-items:center;gap:12px;flex:1;min-width:200px;}
+.slider-row input[type="range"]{
+  flex:1;accent-color:var(--accent);cursor:pointer;
+}
+.slider-val{
+  font-family:"Orbitron",sans-serif;font-size:12px;font-weight:700;
+  color:var(--accent);min-width:44px;text-align:right;
+}
+.dim-input{
+  width:78px;background:var(--field);
+  border:1px solid rgba(255,255,255,0.11);
+  border-radius:8px;color:var(--text);
+  font-family:"Rajdhani",sans-serif;font-size:14px;font-weight:600;
+  padding:9px 10px;outline:none;
+}
+.dim-input:focus{border-color:rgba(0,191,255,0.55);}
 
-    /* ── LEGAL TAB ──────────────────────────────────────────── */
-    .legal-panel {
-      min-height: calc(100vh - 62px);
-      padding: 48px 24px;
-      justify-content: center;
-    }
-    .legal-panel.active {
-      display: flex;
-    }
-    .legal-card {
-      width: min(820px,100%); padding: 36px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.18);
-    }
-    .legal-card h2 { color: var(--gold); font-size: 22px; margin-bottom: 12px; }
-    .legal-card h2:not(:first-of-type) { margin-top: 28px; }
-    .legal-card p { color: var(--muted); line-height: 1.7; margin: 0 0 12px; }
-    .legal-card a { color: var(--accent); }
+.compare-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+.compare-stat{
+  font-size:12px;color:var(--muted);font-weight:600;
+}
+.compare-stat span{color:var(--success);font-weight:700;}
+.result-img-preview{
+  max-width:100%;border-radius:8px;margin-top:12px;
+  border:1px solid rgba(198,168,92,0.2);
+  background:
+    linear-gradient(45deg,#1a2a3a 25%,transparent 25%),
+    linear-gradient(-45deg,#1a2a3a 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#1a2a3a 75%),
+    linear-gradient(-45deg,transparent 75%,#1a2a3a 75%);
+  background-size:16px 16px;
+  background-position:0 0,0 8px,8px -8px,-8px 0px;
+}
+.progress-track{
+  width:100%;height:6px;border-radius:100px;
+  background:rgba(255,255,255,0.08);
+  overflow:hidden;margin-top:10px;
+}
+.progress-fill{
+  height:100%;border-radius:100px;
+  background:linear-gradient(90deg,var(--accent),var(--gold));
+  width:0%;transition:width 0.3s ease;
+}
 
-    /* ── AI ASSISTANT ───────────────────────────────────────── */
-    .ai-fab {
-      position: fixed; bottom: 28px; right: 28px; z-index: 100;
-      width: 56px; height: 56px; border-radius: 50%;
-      border: 2px solid rgba(0,191,255,.5);
-      background: linear-gradient(135deg, rgba(0,191,255,.2), rgba(198,168,92,.15));
-      color: var(--accent); cursor: pointer;
-      display: grid; place-items: center;
-      box-shadow: 0 8px 32px rgba(0,191,255,.25);
-      transition: all .25s;
-      backdrop-filter: blur(12px);
-      touch-action: manipulation;
-    }
-    .ai-fab:hover { transform: scale(1.1); box-shadow: 0 12px 40px rgba(0,191,255,.35); }
-    .ai-fab:active { transform: scale(.95); }
-    .ai-panel {
-      position: fixed; bottom: 96px; right: 28px; z-index: 99;
-      width: min(420px, calc(100vw - 40px));
-      border: 1px solid rgba(0,191,255,.25);
-      border-radius: 14px;
-      background: rgba(10,22,36,.97);
-      backdrop-filter: blur(20px);
-      box-shadow: 0 24px 70px rgba(0,0,0,.4);
-      display: none; flex-direction: column;
-      overflow: hidden;
-      max-height: 500px;
-    }
-    .ai-panel.open { display: flex; }
-    .ai-panel-head {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 18px;
-      border-bottom: 1px solid rgba(0,191,255,.15);
-      background: rgba(0,191,255,.06);
-    }
-    .ai-panel-head h3 {
-      margin: 0; font-size: 13px; font-weight: 700;
-      color: var(--accent); font-family: "Orbitron", sans-serif;
-    }
-    .ai-status {
-      font-size: 10px; font-weight: 700; letter-spacing: .5px;
-      color: var(--muted); text-transform: uppercase;
-    }
-    .ai-status.online { color: var(--success); }
-    .ai-status.offline { color: var(--danger); }
-    .ai-close {
-      background: none; border: none; cursor: pointer;
-      color: var(--muted); font-size: 18px; padding: 6px 8px;
-      transition: color .2s;
-      touch-action: manipulation;
-    }
-    .ai-close:hover { color: var(--text); }
-    .ai-messages {
-      flex: 1; overflow-y: auto; padding: 14px;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    .ai-msg {
-      max-width: 88%; padding: 10px 13px;
-      border-radius: 10px; font-size: 13px; line-height: 1.55;
-      white-space: pre-wrap;
-    }
-    .ai-msg.user {
-      align-self: flex-end;
-      background: rgba(0,191,255,.16);
-      border: 1px solid rgba(0,191,255,.25);
-      color: var(--text);
-    }
-    .ai-msg.ai {
-      align-self: flex-start;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.1);
-      color: var(--text);
-    }
-    .ai-msg.ai.loading { color: var(--muted); font-style: italic; }
-    .ai-suggestions {
-      display: flex; flex-wrap: wrap; gap: 6px;
-      padding: 0 14px 10px;
-    }
-    .ai-suggestion-chip {
-      padding: 6px 10px; border-radius: 999px; cursor: pointer;
-      border: 1px solid rgba(0,191,255,.25);
-      background: rgba(0,191,255,.06);
-      color: var(--accent); font-size: 11px; font-weight: 700;
-      touch-action: manipulation;
-    }
-    .ai-suggestion-chip:hover { background: rgba(0,191,255,.14); }
-    .ai-input-row {
-      display: flex; gap: 8px; padding: 12px;
-      border-top: 1px solid rgba(0,191,255,.12);
-    }
-    .ai-input {
-      flex: 1; padding: 9px 12px; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: var(--text); outline: none; font-size: 13px;
-      transition: border-color .2s;
-    }
-    .ai-input:focus { border-color: rgba(0,191,255,.5); }
-    .ai-send {
-      padding: 9px 14px; border-radius: 8px; cursor: pointer;
-      border: 1px solid rgba(0,191,255,.4);
-      background: rgba(0,191,255,.14);
-      color: var(--accent); font-weight: 800; font-size: 13px;
-      transition: all .2s;
-      touch-action: manipulation;
-    }
-    .ai-send:hover { background: rgba(0,191,255,.24); }
+/* OCR QUEUE */
+.ocr-row{
+  display:grid;grid-template-columns:24px 1fr 70px 60px;gap:10px;align-items:center;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(198,168,92,0.15);
+  border-radius:8px;padding:9px 12px;margin-bottom:6px;
+  font-size:12.5px;
+}
+.ocr-row .ocr-idx{color:var(--muted);font-family:"Orbitron",sans-serif;font-size:10px;}
+.ocr-row .ocr-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-weight:600;}
+.ocr-row .ocr-mini-track{height:5px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;}
+.ocr-row .ocr-mini-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--gold));width:0%;transition:width 0.2s ease;}
+.ocr-row .ocr-status{text-align:right;font-family:"Orbitron",sans-serif;font-size:10px;letter-spacing:0.04em;}
+.ocr-row .ocr-status.wait{color:var(--muted);}
+.ocr-row .ocr-status.run{color:var(--accent);}
+.ocr-row .ocr-status.done{color:var(--success);}
+.ocr-row .ocr-status.err{color:var(--danger);}
 
-    /* Toast */
-    .toast {
-      position: fixed; bottom: 90px; left: 50%; z-index: 200;
-      transform: translateX(-50%) translateY(20px);
-      padding: 10px 20px; border-radius: 8px;
-      background: rgba(10,22,36,.95);
-      border: 1px solid rgba(0,191,255,.3);
-      color: var(--text); font-size: 13px; font-weight: 700;
-      opacity: 0; transition: all .25s;
-      pointer-events: none;
-      max-width: calc(100vw - 40px);
-      text-align: center;
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* NOTICE */
+.notice{
+  display:flex;gap:10px;align-items:flex-start;
+  margin-top:14px;padding:12px 16px;
+  background:rgba(198,168,92,0.05);
+  border:1px solid rgba(198,168,92,0.15);
+  border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--muted);line-height:1.55;
+}
+.notice-icon{color:var(--gold);flex-shrink:0;margin-top:1px;}
 
-    /* ── PROMO / AD OVERLAY ─────────────────────────────────── */
-    .promo-overlay {
-      position: fixed; inset: 0; z-index: 500;
-      display: none; align-items: center; justify-content: center;
-      padding: 0;
-      background:
-        radial-gradient(circle at top left, rgba(0,191,255,.22), transparent 34rem),
-        radial-gradient(circle at 80% 20%, rgba(198,168,92,.18), transparent 30rem),
-        rgba(4,10,18,.99);
-      backdrop-filter: blur(6px);
-      cursor: pointer;
-    }
-    .promo-overlay.open { display: flex; }
-    .promo-card {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      max-width: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 32px 32px;
-      border: none;
-      border-radius: 0;
-      background: var(--panel-strong);
-      box-shadow: none;
-      text-align: center;
-      cursor: default;
-      overflow-y: auto;
-    }
-    .promo-close {
-      position: absolute; top: 14px; right: 14px;
-      width: 32px; height: 32px; border-radius: 50%;
-      border: 1px solid rgba(255,255,255,.15);
-      background: rgba(255,255,255,.06);
-      color: var(--muted); cursor: pointer;
-      font-size: 15px; display: grid; place-items: center;
-      touch-action: manipulation;
-    }
-    .promo-close:hover { color: var(--text); }
-    .promo-logo {
-      width: 76px; height: 76px; border-radius: 20px;
-      object-fit: cover; margin: 0 auto 16px;
-      border: 1px solid rgba(198,168,92,.4);
-      box-shadow: 0 0 30px rgba(0,191,255,.25);
-    }
-    .promo-eyebrow {
-      color: var(--accent); font-family: "Orbitron", sans-serif;
-      font-size: 10px; font-weight: 700; letter-spacing: 2.4px;
-      text-transform: uppercase; margin: 0 0 8px;
-    }
-    .promo-title {
-      font-family: "Orbitron", sans-serif; color: var(--gold);
-      font-size: 22px; margin: 0 0 10px;
-    }
-    .promo-sub { color: var(--muted); font-size: 13.5px; line-height: 1.6; margin: 0 0 22px; }
-    .promo-services {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-      margin: 0 0 26px; text-align: left;
-    }
-    .promo-service {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 12px; border-radius: 9px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.03);
-      color: var(--text); font-size: 12px; font-weight: 700;
-    }
-    .promo-service svg { flex-shrink: 0; color: var(--accent); }
-    .promo-cta {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 13px 26px; border-radius: 9px; cursor: pointer;
-      border: none; text-decoration: none;
-      background: linear-gradient(135deg, var(--gold), var(--accent));
-      color: #0b1c2d; font-weight: 900; font-size: 13px;
-      letter-spacing: .3px;
-      touch-action: manipulation;
-    }
-    .promo-timer {
-      margin-top: 16px; height: 3px; border-radius: 999px;
-      background: rgba(255,255,255,.08); overflow: hidden;
-      width: min(520px, 100%);
-    }
-    .promo-timer-fill {
-      display: block; height: 100%; width: 100%;
-      background: linear-gradient(90deg, var(--gold), var(--accent));
-      transform-origin: left; animation: promo-countdown 10s linear forwards;
-    }
-    @keyframes promo-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+/* HOW IT WORKS */
+.how-section{
+  position:relative;z-index:1;
+  max-width:900px;margin:0 auto;
+  padding:2rem 1.5rem 5rem;
+}
+.section-label{
+  font-family:"Orbitron",sans-serif;font-size:10px;
+  font-weight:700;letter-spacing:2.6px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:8px;
+}
+.section-title{
+  font-family:"Orbitron",sans-serif;
+  font-size:1.5rem;font-weight:700;color:var(--gold);
+  margin-bottom:2rem;
+}
+.steps-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:14px;
+}
+.step-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:10px;padding:20px;
+  transition:border-color 0.2s,transform 0.2s;
+}
+.step-card:hover{border-color:rgba(0,191,255,0.3);transform:translateY(-2px);}
+.step-num{
+  font-family:"Orbitron",sans-serif;
+  font-size:9px;font-weight:700;letter-spacing:0.15em;
+  color:var(--gold);opacity:0.7;margin-bottom:12px;
+}
+.step-icon{color:var(--accent);margin-bottom:10px;}
+.step-name{
+  font-family:"Orbitron",sans-serif;font-size:12px;
+  font-weight:700;color:var(--text);margin-bottom:6px;
+}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.55;font-weight:500;}
 
-    /* ── RESPONSIVE ─────────────────────────────────────────── */
-    @media (max-width: 1180px) {
-      .app-shell.active { grid-template-columns: 1fr; }
-      .control-panel { border-right: 0; border-bottom: 1px solid var(--line); max-height: none; }
-      .preview-panel { max-height: none; }
-    }
-    @media (max-width: 760px) {
-      .top-bar { grid-template-columns: 1fr; gap: 10px; padding: 12px 14px; }
-      .main-tabs { justify-content: stretch; }
-      .tab-btn { flex: 1; padding: 10px 4px; font-size: 10px; min-height: 40px; }
-      .site-link { justify-self: start; }
-      .control-panel, .preview-panel { padding: 14px; }
-      .panel-head h1 { font-size: 20px; }
-      .form-grid { grid-template-columns: 1fr; }
-      .preview-toolbar { flex-direction: column; align-items: stretch; }
-      .toolbar-actions { justify-content: stretch; }
-      .tool-btn { flex: 1; text-align: center; }
-      .cv-stage { justify-content: start; padding-bottom: 100px; }
-      .cv-document, .cv-page { width: 794px; }
-      .draft-banner { flex-direction: column; align-items: stretch; }
-      .draft-banner-actions { justify-content: stretch; }
-      .draft-banner-actions button { flex: 1; }
-      .ai-fab { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); right: 16px; }
-      .ai-panel { right: 16px; left: 16px; width: auto; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
-      .promo-services { grid-template-columns: 1fr; }
-      .promo-card { padding: 32px 20px 24px; }
-    }
+/* FOOTER */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--line);
+  padding:2rem;text-align:center;
+  color:var(--muted);font-size:13px;font-weight:500;
+}
+footer a{color:var(--muted);text-decoration:none;}
+footer a:hover{color:var(--gold);}
+.footer-brand{
+  display:inline-flex;align-items:center;gap:8px;justify-content:center;
+  font-family:"Orbitron",sans-serif;font-size:13px;font-weight:900;
+  color:var(--gold);letter-spacing:1.5px;margin-bottom:8px;
+}
+.footer-brand img{width:20px;height:20px;border-radius:50%;object-fit:cover;}
+.footer-brand span{color:var(--accent);}
 
-    /* ── PRINT ──────────────────────────────────────────────── */
-    @media print {
-      body { background: #fff; }
-      .top-bar, .control-panel, .preview-toolbar, .rings-bg,
-      .ai-fab, .ai-panel, .toast, .gallery-panel, .recent-panel, .legal-panel, .draft-banner, .promo-overlay { display: none !important; }
-      .app-shell, .app-shell.active, .preview-panel, .cv-stage {
-        display: block !important; padding: 0; margin: 0;
-        max-height: none; overflow: visible;
-      }
-      .cv-document, .cv-page { width: 210mm; }
-      .cv-page { margin: 0; box-shadow: none; }
-    }
-  </style>
+/* RESPONSIVE */
+@media(max-width:700px){
+  .top-bar{grid-template-columns:1fr;gap:10px;padding:12px 14px;}
+  .nav-links{justify-content:stretch;}
+  .nav-link{flex:1;text-align:center;}
+  .top-actions{justify-self:start;}
+  .url-row{flex-direction:column;}
+  .dl-btn{height:48px;justify-content:center;}
+  .hero{padding:3rem 1rem 2rem;}
+  .options-row{gap:8px;}
+}
+</style>
 </head>
 <body>
 
 <div class="rings-bg" aria-hidden="true"><span></span><span></span><span></span></div>
 
 <header class="top-bar">
-  <a class="brand" href="https://tresforwrld.github.io/ANICADETECH.CV/" target="_blank" rel="noreferrer">
-    <img class="brand-mark" src="https://i.imgur.com/RcBmjWM.png" alt="ANICADE Tech logo">
-    <span>ANICADE<span class="dot">.</span>CV</span>
+  <a class="brand" href="https://www.anicadetech.xyz">
+    <span class="brand-mark"><img src="https://i.imgur.com/RcBmjWM.png" alt="Anicade"></span>
+    <span>ANICADE<span class="dot">.</span>TOOLKIT</span>
   </a>
-  <nav class="main-tabs" aria-label="Application sections">
-    <button class="tab-btn active" type="button" data-tab="builder">Builder</button>
-    <button class="tab-btn" type="button" data-tab="templates">Templates</button>
-    <button class="tab-btn" type="button" data-tab="recent">Recent</button>
-    <button class="tab-btn" type="button" data-tab="legal">Terms</button>
+  <nav class="nav-links">
+    <a class="nav-link" href="#how">How It Works</a>
   </nav>
-  <a class="site-link" href="https://www.anicadetech.xyz" target="_blank" rel="noreferrer">Anicade Tech</a>
+  <div class="top-actions">
+    <a class="site-link" href="https://www.anicadetech.xyz" target="_blank" rel="noreferrer">Anicade Tech ↗</a>
+  </div>
 </header>
 
 <main>
+<section class="hero">
+  <div class="eyebrow">
+    <span class="hero-dot"></span>
+    FREE &nbsp;·&nbsp; NO SIGNUP &nbsp;·&nbsp; NO LIMITS
+  </div>
+  <h1>Every Link &amp; Image Tool<br><span class="gold">In One Place.</span></h1>
+  <p class="hero-sub">QR codes, short links, background removal, compression, format conversion and OCR text extraction — always free, no account needed.</p>
+</section>
 
-  <!-- ── BUILDER ───────────────────────────────────────────── -->
-  <section class="app-shell tab-panel active" id="builder-panel">
-    <aside class="control-panel" aria-label="CV form">
-      <div class="panel-head">
-        <p class="eyebrow">Professional CV Generator</p>
-        <h1>Build a job-ready CV</h1>
-        <p>Fill in your details, pick a template and export a polished multi-page CV instantly.</p>
+<div class="dl-wrap">
+  <div class="tab-strip">
+    <button class="tab-btn active" id="tab-qr" onclick="switchTab('qr')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14" y2="21"/><line x1="21" y1="14" x2="21" y2="21"/><line x1="14" y1="17.5" x2="21" y2="17.5"/></svg>
+      QR Code
+    </button>
+    <button class="tab-btn" id="tab-short" onclick="switchTab('short')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Short Link
+    </button>
+    <button class="tab-btn" id="tab-bg" onclick="switchTab('bg')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
+      BG Remover
+    </button>
+    <button class="tab-btn" id="tab-img" onclick="switchTab('img')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      Image Tools
+    </button>
+    <button class="tab-btn" id="tab-ocr" onclick="switchTab('ocr')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+      OCR
+    </button>
+  </div>
+
+  <div class="dl-card">
+
+    <!-- QR CODE PANEL -->
+    <div class="tool-panel active" id="panel-qr">
+      <div class="options-row">
+        <span class="opt-label">Size</span>
+        <select class="qual-select" id="qr-size">
+          <option value="150">150 × 150</option>
+          <option value="300" selected>300 × 300</option>
+          <option value="500">500 × 500</option>
+          <option value="800">800 × 800</option>
+        </select>
       </div>
 
-      <div class="draft-banner" id="draft-banner" hidden>
-        <span id="draft-banner-text">Welcome back — your last draft was restored automatically.</span>
-        <div class="draft-banner-actions">
-          <button type="button" class="discard-btn" id="discard-draft-btn">Start fresh</button>
+      <div class="url-row">
+        <input class="url-input" id="qr-input" type="text" placeholder="Paste a link or text to encode…" autocomplete="off" spellcheck="false" />
+        <button class="dl-btn" id="qr-btn" onclick="generateQR()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          GENERATE
+        </button>
+      </div>
+
+      <div class="status-box" id="qr-status"></div>
+      <div class="result-box" id="qr-result">
+        <div class="qr-preview"><img id="qr-img" alt="QR code preview" /></div>
+        <div class="result-meta">
+          <div class="result-title">QR code ready</div>
+          <div class="result-info" id="qr-info"></div>
+          <div class="dl-links">
+            <a class="dl-link primary" id="qr-download" download="qr-code.png" target="_blank" rel="noreferrer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download PNG
+            </a>
+          </div>
         </div>
       </div>
 
-      <div class="progress-card">
-        <div class="progress-row">
-          <span class="pct" id="completion-label">0%</span>
-          <span class="plabel">CV completion</span>
-        </div>
-        <div class="progress-track">
-          <span class="progress-fill" id="completion-bar"></span>
-        </div>
+      <div class="notice">
+        <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Works with any text or URL — Wi-Fi credentials, contact cards, links, plain notes.</span>
       </div>
-      <form id="cv-form">
-
-        <details open>
-          <summary>
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            Personal Information
-          </summary>
-          <div class="section-body">
-            <div class="form-grid">
-              <label>Full name<span class="required-mark">*</span> <input name="fullName" placeholder="e.g. Mutale Chanda" required spellcheck="true"></label>
-              <label>Target role<span class="required-mark">*</span> <input name="targetRole" placeholder="e.g. Software Developer" required spellcheck="true"></label>
-              <label>Email <input name="email" type="email" placeholder="you@example.com" inputmode="email" autocomplete="email"></label>
-              <label>Phone <input name="phone" placeholder="+260 777 000 000" inputmode="tel" autocomplete="tel"></label>
-              <label>Location <input name="location" placeholder="Lusaka, Zambia" spellcheck="true"></label>
-              <label>Portfolio / LinkedIn <input name="portfolio" placeholder="https://linkedin.com/in/you"></label>
-            </div>
-            <div class="photo-upload-row">
-              <div class="photo-preview" id="photo-preview" hidden>
-                <img id="photo-preview-img" alt="Profile photo preview">
-              </div>
-              <div class="photo-upload-controls">
-                <label class="photo-upload-label" for="profile-photo-input">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                  <span id="photo-upload-label-text">Add profile photo</span>
-                </label>
-                <input type="file" id="profile-photo-input" accept="image/*" hidden>
-                <button type="button" class="photo-remove-btn" id="photo-remove-btn" hidden>Remove</button>
-              </div>
-            </div>
-          </div>
-        </details>
-
-        <details open>
-          <summary>
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-            Professional Profile
-          </summary>
-          <div class="section-body">
-            <label class="full">Summary
-              <textarea name="summary" rows="5" placeholder="A concise career summary showing your experience, strengths and the value you bring." spellcheck="true"></textarea>
-            </label>
-            <div class="ai-enhance-row">
-              <button type="button" class="spell-btn" data-field="summary">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-                Spell Check
-              </button>
-              <button type="button" class="ai-enhance-btn" data-field="summary">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-                AI Enhance
-              </button>
-            </div>
-            <label class="full" style="margin-top:12px">Key skills
-              <textarea name="skills" rows="3" placeholder="Project management, customer support, Excel, sales, web development" spellcheck="true"></textarea>
-            </label>
-          </div>
-        </details>
-
-        <details open>
-          <summary>
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-            Work Experience
-          </summary>
-          <div class="section-body">
-            <div class="repeat-head">
-              <p>Add roles. Include measurable results where possible.</p>
-              <button class="mini-btn" type="button" data-add="experience">+ Add role</button>
-            </div>
-            <div id="experience-list" class="repeat-list"></div>
-          </div>
-        </details>
-
-        <details>
-          <summary>
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-            Education
-          </summary>
-          <div class="section-body">
-            <div class="repeat-head">
-              <p>Add qualifications and institutions.</p>
-              <button class="mini-btn" type="button" data-add="education">+ Add education</button>
-            </div>
-            <div id="education-list" class="repeat-list"></div>
-          </div>
-        </details>
-
-        <details>
-          <summary>
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-            Projects, Certs & Awards
-          </summary>
-          <div class="section-body">
-            <label class="full">Projects
-              <textarea name="projects" rows="4" placeholder="Project name — what you built, tools used, outcome." spellcheck="true"></textarea>
-            </label>
-            <div class="ai-enhance-row">
-              <button type="button" class="spell-btn" data-field="projects">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-                Spell Check
-              </button>
-              <button type="button" class="ai-enhance-btn" data-field="projects">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-                AI Enhance
-              </button>
-            </div>
-            <label class="full" style="margin-top:12px">Certifications
-              <textarea name="certifications" rows="3" placeholder="Certificate name, provider, year" spellcheck="true"></textarea>
-            </label>
-            <label class="full" style="margin-top:12px">Awards or achievements
-              <textarea name="awards" rows="3" placeholder="Employee of the month, sales target exceeded, competition winner" spellcheck="true"></textarea>
-            </label>
-          </div>
-        </details>
-
-        <details>
-          <summary>
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
-            Extra Information
-          </summary>
-          <div class="section-body">
-            <div class="form-grid">
-              <label>Languages <input name="languages" placeholder="English, Bemba, Nyanja"></label>
-              <label>Availability <input name="availability" placeholder="Immediately / 2 weeks notice"></label>
-              <label>References <input name="references" placeholder="Available on request"></label>
-              <label>Nationality <input name="nationality" placeholder="Zambian"></label>
-            </div>
-          </div>
-        </details>
-
-      </form>
-    </aside>
-
-    <section class="preview-panel" aria-label="CV preview">
-      <div class="preview-toolbar">
-        <div>
-          <p class="eyebrow">Live Preview</p>
-          <h2 id="preview-title">Your CV is taking shape</h2>
-        </div>
-        <div class="toolbar-actions">
-          <button type="button" class="tool-btn" id="sample-button">Sample data</button>
-          <button type="button" class="tool-btn" id="clear-button">Clear</button>
-          <button type="button" class="tool-btn" id="html-button">Export HTML</button>
-          <button type="button" class="tool-btn" id="print-button">Print</button>
-          <button type="button" class="tool-btn primary" id="pdf-button">Download PDF</button>
-        </div>
-      </div>
-      <div class="cv-stage">
-        <article id="cv-preview" class="cv-document cv-modern"></article>
-      </div>
-    </section>
-  </section>
-
-  <!-- ── TEMPLATES ─────────────────────────────────────────── -->
-  <section class="tab-panel gallery-panel" id="templates-panel">
-    <p class="eyebrow">CV Templates</p>
-    <h2>Choose your look</h2>
-    <p>Select a template style and accent colour, then head to the Builder to fill in your details.</p>
-    <div class="template-grid" id="template-grid"></div>
-  </section>
-
-  <!-- ── RECENT ────────────────────────────────────────────── -->
-  <section class="tab-panel recent-panel" id="recent-panel">
-    <p class="eyebrow">Saved CVs</p>
-    <h2>Recent CVs</h2>
-    <p>Save your current CV data by name and reload it any time — stored locally in your browser. Your in-progress CV is also auto-saved on this device as you type and restored automatically when you come back.</p>
-    <div class="storage-warning" id="storage-warning" hidden>
-      Your browser is blocking local storage (this can happen in private/incognito mode). Auto-save and named saves won't persist between visits — export your CV as HTML when you're done to avoid losing work.
     </div>
-    <div class="save-row">
-      <input class="save-name-input" id="save-name-input" placeholder="Give this CV a name…">
-      <button class="save-cv-btn" id="save-cv-btn">Save current CV</button>
-    </div>
-    <div class="recent-grid" id="recent-grid"></div>
-  </section>
 
-  <!-- ── LEGAL ─────────────────────────────────────────────── -->
-  <section class="tab-panel legal-panel" id="legal-panel">
-    <div class="legal-card">
-      <p class="eyebrow">Anicade CV Generator</p>
-      <h2>Terms of Use</h2>
-      <p>This tool helps users create CV documents from the information they provide. Users are responsible for ensuring that all content is truthful, accurate and appropriate for job applications.</p>
-      <p>The generator is provided for convenience and does not guarantee employment, interview selection or recruiter approval. Always review the generated CV before sending it to employers.</p>
-      <p>ANICADE Tech branding belongs to ANICADE Tech. Visit <a href="https://www.anicadetech.xyz" target="_blank" rel="noreferrer">www.anicadetech.xyz</a> for company information.</p>
-      <h2>Privacy Policy</h2>
-      <p>All CV information is processed entirely in your browser. The Recent CVs and auto-save draft features use your browser's localStorage — data stays on your device and is never uploaded to ANICADE Tech servers.</p>
-      <p>Do not enter sensitive information not needed for a job application, such as passwords, bank details or national identity numbers.</p>
-      <h2>AI Assistant</h2>
-      <p>The AI Assistant and AI Enhance features use free, publicly available text-generation and language-checking services to help polish your CV text, plus a built-in offline knowledge base of common CV questions. Do not include passwords or highly sensitive personal data in AI-enhanced fields, since some requests are sent to third-party services over the network.</p>
-    </div>
-  </section>
+    <!-- SHORT LINK PANEL -->
+    <div class="tool-panel" id="panel-short">
+      <div class="url-row">
+        <input class="url-input" id="short-input" type="url" placeholder="Paste a long URL to shorten…" autocomplete="off" spellcheck="false" />
+        <button class="dl-btn" id="short-btn" onclick="shortenLink()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          SHORTEN
+        </button>
+      </div>
 
+      <div class="status-box" id="short-status"></div>
+      <div class="result-box" id="short-result">
+        <div class="result-meta">
+          <div class="result-title">Your short link</div>
+          <div class="result-info" id="short-info"></div>
+          <div class="dl-links">
+            <a class="dl-link primary" id="short-open" target="_blank" rel="noreferrer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Link
+            </a>
+            <button class="dl-link secondary" id="short-copy">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy Link
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="notice">
+        <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Links are permanent and public once created — don't shorten anything private.</span>
+      </div>
+    </div>
+
+    <!-- BACKGROUND REMOVER PANEL -->
+    <div class="tool-panel" id="panel-bg">
+      <div class="dropzone" id="bg-dropzone" onclick="document.getElementById('bg-file').click()">
+        <input type="file" id="bg-file" accept="image/png,image/jpeg,image/webp" />
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div class="dropzone-text">Drop an image or click to browse</div>
+        <div class="dropzone-sub">PNG, JPG or WEBP — processed on your device</div>
+      </div>
+      <div class="file-chip" id="bg-chip">
+        <img id="bg-chip-thumb" alt="" />
+        <div class="file-chip-info">
+          <div class="file-chip-name" id="bg-chip-name"></div>
+          <div class="file-chip-size" id="bg-chip-size"></div>
+        </div>
+        <button class="file-chip-remove" onclick="clearFile('bg')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="url-row" style="margin-top:16px;">
+        <button class="dl-btn" id="bg-btn" onclick="removeBg()" style="width:100%;justify-content:center;" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/></svg>
+          REMOVE BACKGROUND
+        </button>
+      </div>
+
+      <div class="status-box" id="bg-status"></div>
+      <div class="result-box" id="bg-result">
+        <div class="result-meta">
+          <div class="result-title">Background removed</div>
+          <img class="result-img-preview" id="bg-preview" alt="Result preview" />
+          <div class="dl-links" style="margin-top:12px;">
+            <a class="dl-link primary" id="bg-download" download="no-background.png">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download PNG
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="notice">
+        <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Runs fully in your browser — your photo is never uploaded anywhere. First run downloads a small model, so it's slower the first time.</span>
+      </div>
+    </div>
+
+    <!-- IMAGE TOOLS PANEL -->
+    <div class="tool-panel" id="panel-img">
+      <div class="itool-tabs">
+        <div class="itool-tab active" id="itab-compress" onclick="switchITab('compress')">Compress</div>
+        <div class="itool-tab" id="itab-convert" onclick="switchITab('convert')">Convert</div>
+        <div class="itool-tab" id="itab-resize" onclick="switchITab('resize')">Resize</div>
+      </div>
+
+      <div class="dropzone" id="img-dropzone" onclick="document.getElementById('img-file').click()">
+        <input type="file" id="img-file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" />
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div class="dropzone-text">Drop an image or click to browse</div>
+        <div class="dropzone-sub">PNG, JPG, WEBP, GIF or BMP — processed on your device</div>
+      </div>
+      <div class="file-chip" id="img-chip">
+        <img id="img-chip-thumb" alt="" />
+        <div class="file-chip-info">
+          <div class="file-chip-name" id="img-chip-name"></div>
+          <div class="file-chip-size" id="img-chip-size"></div>
+        </div>
+        <button class="file-chip-remove" onclick="clearFile('img')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="options-row itool-opts active" id="opts-compress">
+        <span class="opt-label">Quality</span>
+        <div class="slider-row">
+          <input type="range" id="compress-quality" min="10" max="95" value="70" />
+          <span class="slider-val" id="compress-quality-val">70%</span>
+        </div>
+      </div>
+
+      <div class="options-row itool-opts" id="opts-convert">
+        <span class="opt-label">Output format</span>
+        <select class="qual-select" id="convert-format">
+          <option value="image/png">PNG</option>
+          <option value="image/jpeg" selected>JPG</option>
+          <option value="image/webp">WEBP</option>
+        </select>
+      </div>
+
+      <div class="options-row itool-opts" id="opts-resize">
+        <span class="opt-label">Width</span>
+        <input class="dim-input" type="number" id="resize-width" placeholder="e.g. 800" min="1" />
+        <span class="opt-label">Height</span>
+        <input class="dim-input" type="number" id="resize-height" placeholder="auto" min="1" />
+        <span class="dropzone-sub" style="width:100%;">Leave height blank to keep the original aspect ratio.</span>
+      </div>
+
+      <div class="url-row" style="margin-top:6px;">
+        <button class="dl-btn" id="img-btn" onclick="processImage()" style="width:100%;justify-content:center;" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PROCESS IMAGE
+        </button>
+      </div>
+
+      <div class="status-box" id="img-status"></div>
+      <div class="result-box" id="img-result">
+        <div class="result-meta">
+          <div class="result-title" id="img-result-title">Image ready</div>
+          <div class="compare-row" id="img-compare"></div>
+          <img class="result-img-preview" id="img-preview" alt="Result preview" />
+          <div class="dl-links" style="margin-top:12px;">
+            <a class="dl-link primary" id="img-download">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Image
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="notice">
+        <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Runs fully in your browser — your photo is never uploaded anywhere.</span>
+      </div>
+    </div>
+
+    <!-- OCR PANEL -->
+    <div class="tool-panel" id="panel-ocr">
+      <div class="dropzone" id="ocr-dropzone" onclick="document.getElementById('ocr-file').click()">
+        <input type="file" id="ocr-file" accept=".pdf,image/*" multiple />
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+        <div class="dropzone-text">Drop PDFs or scanned images, or click to browse</div>
+        <div class="dropzone-sub">Any mix, any order — up to 100+ pages, saved locally as you go</div>
+      </div>
+
+      <div class="progress-track" id="ocr-load-track" style="display:none;">
+        <div class="progress-fill" id="ocr-load-fill"></div>
+      </div>
+      <div class="dropzone-sub" id="ocr-load-label" style="display:none;margin-top:6px;"></div>
+
+      <div class="options-row" style="margin-top:16px;">
+        <span class="opt-label">Language</span>
+        <select class="qual-select" id="ocr-lang">
+          <option value="eng" selected>English</option>
+          <option value="fra">French</option>
+          <option value="deu">German</option>
+          <option value="spa">Spanish</option>
+          <option value="por">Portuguese</option>
+          <option value="ita">Italian</option>
+          <option value="nld">Dutch</option>
+          <option value="swa">Swahili</option>
+          <option value="chi_sim">Chinese (Simplified)</option>
+          <option value="jpn">Japanese</option>
+          <option value="ara">Arabic</option>
+          <option value="rus">Russian</option>
+        </select>
+      </div>
+
+      <div class="options-row" style="margin-top:-6px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--muted);font-weight:600;">
+          <input type="checkbox" id="ocr-handwriting" style="accent-color:var(--accent);width:15px;height:15px;cursor:pointer;" />
+          Enhance for handwriting / low-quality scans
+        </label>
+      </div>
+
+      <div class="notice" id="ocr-restore-banner" style="display:none;">
+        <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+        <span id="ocr-restore-text"></span>
+      </div>
+
+      <div id="ocr-queue" style="display:none;margin-top:4px;max-height:260px;overflow-y:auto;"></div>
+
+      <div class="url-row" style="margin-top:16px;gap:10px;">
+        <button class="dl-btn" id="ocr-start-btn" onclick="startOcr()" style="flex:1;justify-content:center;" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16 2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+          START SCANNING
+        </button>
+        <button class="dl-link secondary" id="ocr-clear-btn" style="justify-content:center;" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Clear
+        </button>
+      </div>
+      <div class="url-row" id="ocr-cancel-row" style="display:none;margin-top:10px;">
+        <button class="dl-link secondary" id="ocr-cancel-btn" style="flex:1;justify-content:center;">Cancel</button>
+      </div>
+
+      <div class="status-box" id="ocr-status"></div>
+      <div class="url-row" id="ocr-retry-row" style="display:none;margin-top:10px;">
+        <button class="dl-link secondary" id="ocr-retry-engine-btn" style="flex:1;justify-content:center;">Retry connecting</button>
+      </div>
+      <div class="progress-track" id="ocr-progress-track" style="display:none;">
+        <div class="progress-fill" id="ocr-progress-fill"></div>
+      </div>
+
+      <div class="result-box" id="ocr-result">
+        <div class="result-meta">
+          <div class="result-title">Extracted text</div>
+          <div class="result-info" id="ocr-info"></div>
+          <div id="ocr-output" style="background:rgba(255,255,255,0.03);border:1px solid rgba(198,168,92,0.15);border-radius:8px;padding:16px;font-family:'Courier New',monospace;font-size:12.5px;line-height:1.6;max-height:320px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;color:var(--text);margin-bottom:14px;"></div>
+          <div class="dl-links">
+            <a class="dl-link primary" id="ocr-download" download="ocr-text.txt">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download .txt
+            </a>
+            <button class="dl-link secondary" id="ocr-copy">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy All
+            </button>
+            <button class="dl-link secondary" id="ocr-retry-failed-btn" style="display:none;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Retry failed pages
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="notice">
+        <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Runs fully in your browser — your documents are never uploaded anywhere. Your queue and extracted text are saved to this browser automatically, so closing the tab or losing connection won't lose your progress; hit "Clear" only when you actually want to wipe it. Large batches (100+ pages) take real time; keep this tab open while it works.</span>
+      </div>
+      <div class="notice">
+        <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><b style="color:var(--gold);">On handwriting:</b> this engine is built and trained for printed text. Neat, well-spaced handwriting or block capitals can come through readable with "Enhance" mode on, but cursive or messy handwriting will be unreliable — that's a limit of the free on-device model, not a setting we can fully fix. For consistently accurate handwriting recognition you'd need a dedicated handwriting-OCR service (e.g. Google Cloud Vision or Azure's Read API), which requires a paid API key and a server call rather than running for free in the browser.</span>
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="section-label">// HOW IT WORKS</div>
+  <div class="section-title">Five tools, one card</div>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </div>
+      <div class="step-name">Pick a tool</div>
+      <div class="step-desc">Switch between QR Code, Short Link, BG Remover, Image Tools and OCR using the tabs above the card.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </div>
+      <div class="step-name">Add your link or file</div>
+      <div class="step-desc">Paste a URL, or drop in a photo or document — no account, no settings, nothing else required.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </div>
+      <div class="step-name">Get your result</div>
+      <div class="step-desc">Download your file or copy your link — instantly, for free.</div>
+    </div>
+  </div>
+</section>
 </main>
 
-<!-- AI FAB + PANEL -->
-<button class="ai-fab" id="ai-fab" aria-label="Open AI Assistant" title="AI Writing Assistant">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-  </svg>
-</button>
-<div class="ai-panel" id="ai-panel">
-  <div class="ai-panel-head">
-    <h3>ANICADE AI — Writing Assistant</h3>
-    <div style="display:flex;align-items:center;gap:10px">
-      <span class="ai-status" id="ai-status">checking…</span>
-      <button class="ai-close" id="ai-close" aria-label="Close AI Assistant">✕</button>
-    </div>
-  </div>
-  <div class="ai-messages" id="ai-messages">
-    <div class="ai-msg ai">Hey! I'm your CV writing assistant. Ask me to improve your summary, suggest bullet points, tailor your CV for a specific role, or anything else about job applications.</div>
-  </div>
-  <div class="ai-suggestions" id="ai-suggestions"></div>
-  <div class="ai-input-row">
-    <input class="ai-input" id="ai-input" placeholder="Ask me anything about your CV…" autocomplete="off">
-    <button class="ai-send" id="ai-send">Send</button>
-  </div>
-</div>
+<footer>
+  <div class="footer-brand"><img src="https://i.imgur.com/RcBmjWM.png" alt="Anicade">ANICADE<span>.</span>TECH</div>
+  <p>Kabwe, Zambia &nbsp;·&nbsp; <a href="mailto:anicadetech@gmail.com">anicadetech@gmail.com</a></p>
+  <p style="margin-top:6px;">
+    <a href="https://www.anicadetech.xyz">Home</a> &nbsp;·&nbsp;
+    <a href="https://www.anicadetech.xyz/terms.html">Terms</a> &nbsp;·&nbsp;
+    <a href="https://www.anicadetech.xyz/terms.html#privacy">Privacy</a>
+  </p>
+  <p style="margin-top:10px;font-size:11px;">© 2026 ANICADE TECH. All rights reserved.</p>
+</footer>
 
-<!-- PROMO OVERLAY -->
-<div class="promo-overlay" id="promo-overlay">
-  <div class="promo-card" id="promo-card">
-    <button class="promo-close" id="promo-close" aria-label="Close ad">✕</button>
-    <img class="promo-logo" src="https://i.imgur.com/RcBmjWM.png" alt="ANICADE Tech logo">
-    <p class="promo-eyebrow">ANICADE Tech</p>
-    <h2 class="promo-title">Need more than a CV?</h2>
-    <p class="promo-sub">ANICADE Tech builds the websites, apps and digital tools behind your next opportunity. Full-stack development, done in Zambia, for clients everywhere.</p>
-    <div class="promo-services">
-      <div class="promo-service"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> Web & App Development</div>
-      <div class="promo-service"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg> AI-Powered Tools</div>
-      <div class="promo-service"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg> Business Portals & Admin Systems</div>
-      <div class="promo-service"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg> Streaming & Content Platforms</div>
-      <div class="promo-service"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg> Branding & UI/UX Design</div>
-      <div class="promo-service"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Hosting, Domains & Maintenance</div>
-    </div>
-    <a class="promo-cta" id="promo-cta" href="https://www.anicadetech.xyz" target="_blank" rel="noreferrer">
-      Visit anicadetech.xyz
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M8 7h9v9"/></svg>
-    </a>
-    <div class="promo-timer"><span class="promo-timer-fill" id="promo-timer-fill"></span></div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<!-- TEMPLATES -->
-<template id="experience-template">
-  <div class="repeat-item" data-kind="experience">
-    <button class="remove-btn" type="button" aria-label="Remove role">Remove</button>
-    <div class="form-grid">
-      <label>Job title <input data-field="role" placeholder="Sales Assistant" spellcheck="true"></label>
-      <label>Company <input data-field="company" placeholder="ABC Ltd"></label>
-      <label>Dates <input data-field="dates" placeholder="Jan 2022 – Present"></label>
-      <label>Location <input data-field="place" placeholder="Kabwe, Zambia"></label>
-    </div>
-    <label class="full" style="margin-top:10px">Responsibilities & achievements
-      <textarea data-field="details" rows="4" placeholder="Managed customer enquiries&#10;Improved monthly sales by 18%&#10;Prepared reports and coordinated stock records" spellcheck="true"></textarea>
-    </label>
-    <div class="ai-enhance-row">
-      <button type="button" class="spell-btn" data-repeat-field="details">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-        Spell Check
-      </button>
-      <button type="button" class="ai-enhance-btn" data-repeat-field="details">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-        AI Enhance bullet points
-      </button>
-    </div>
-  </div>
-</template>
-
-<template id="education-template">
-  <div class="repeat-item" data-kind="education">
-    <button class="remove-btn" type="button" aria-label="Remove education">Remove</button>
-    <div class="form-grid">
-      <label>Qualification <input data-field="qualification" placeholder="Diploma in Business Administration" spellcheck="true"></label>
-      <label>Institution <input data-field="institution" placeholder="University or college name"></label>
-      <label>Dates <input data-field="dates" placeholder="2019 – 2021"></label>
-      <label>Location <input data-field="place" placeholder="Lusaka, Zambia"></label>
-    </div>
-    <label class="full" style="margin-top:10px">Notes
-      <textarea data-field="notes" rows="3" placeholder="Relevant modules, distinctions, research, leadership roles" spellcheck="true"></textarea>
-    </label>
-  </div>
-</template>
-
-<script src="ai-logic.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-/* ════════════════════════════════════════════════════════════
-   ANICADE.CV — app.js (inlined)
-   ════════════════════════════════════════════════════════════ */
+function switchTab(name) {
+  ['qr','short','bg','img','ocr'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === name);
+    document.getElementById('panel-' + t).classList.toggle('active', t === name);
+  });
+}
 
-/* ── TEMPLATE DEFINITIONS ─────────────────────────────────── */
-const TEMPLATES = [
-  {
-    id: "modern",
-    name: "Modern Two-Column",
-    desc: "Clean sidebar layout with skills pills and accent colours. Great for creative and tech roles.",
-    class: "cv-modern",
-    accents: [
-      { label: "Teal",     hex: "#0f766e" },
-      { label: "Blue",     hex: "#1d4ed8" },
-      { label: "Copper",   hex: "#7c2d12" },
-      { label: "Graphite", hex: "#374151" },
-    ]
-  },
-  {
-    id: "classic",
-    name: "Classic Single-Column",
-    desc: "Traditional single-column format. Universally accepted across industries.",
-    class: "cv-classic",
-    accents: [
-      { label: "Navy",     hex: "#1e3a5f" },
-      { label: "Teal",     hex: "#0f766e" },
-      { label: "Graphite", hex: "#374151" },
-      { label: "Plum",     hex: "#6b21a8" },
-    ]
-  },
-  {
-    id: "executive",
-    name: "Executive",
-    desc: "Dark header band with a commanding presence. Perfect for senior and leadership roles.",
-    class: "cv-executive",
-    accents: [
-      { label: "Gold",     hex: "#b45309" },
-      { label: "Teal",     hex: "#0f766e" },
-      { label: "Blue",     hex: "#1d4ed8" },
-      { label: "Rose",     hex: "#9f1239" },
-    ]
-  },
-  {
-    id: "minimal",
-    name: "Minimal",
-    desc: "Ultra-clean design with hairline rules. Lets your content do the talking.",
-    class: "cv-minimal",
-    accents: [
-      { label: "Teal",     hex: "#0f766e" },
-      { label: "Slate",    hex: "#475569" },
-      { label: "Indigo",   hex: "#3730a3" },
-      { label: "Rose",     hex: "#9f1239" },
-    ]
-  }
-];
+function switchITab(name) {
+  ['compress','convert','resize'].forEach(t => {
+    document.getElementById('itab-' + t).classList.toggle('active', t === name);
+    document.getElementById('opts-' + t).classList.toggle('active', t === name);
+  });
+  currentITool = name;
+}
+let currentITool = 'compress';
 
-let currentTemplate = TEMPLATES[0];
-let currentAccent = TEMPLATES[0].accents[0].hex;
-let currentPhoto = null; /* data URL of the uploaded profile photo, or null */
-
-/* ── PROFILE PHOTO UPLOAD ─────────────────────────────────── */
-function setPhotoPreview(dataUrl) {
-  const wrap = document.getElementById("photo-preview");
-  const img = document.getElementById("photo-preview-img");
-  const removeBtn = document.getElementById("photo-remove-btn");
-  const labelText = document.getElementById("photo-upload-label-text");
-  currentPhoto = dataUrl || null;
-  if (currentPhoto) {
-    img.src = currentPhoto;
-    wrap.hidden = false;
-    removeBtn.hidden = false;
-    labelText.textContent = "Change photo";
+function setStatus(id, type, html) {
+  const b = document.getElementById(id);
+  b.className = 'status-box ' + type;
+  if (type === 'loading') {
+    b.innerHTML = '<div class="spin"></div><span>' + html + '</span>';
   } else {
-    img.src = "";
-    wrap.hidden = true;
-    removeBtn.hidden = true;
-    labelText.textContent = "Add profile photo";
+    b.innerHTML = html;
   }
 }
-document.getElementById("profile-photo-input").addEventListener("change", (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  if (!file.type.startsWith("image/")) { showToast("Please choose an image file"); return; }
-  if (file.size > 5 * 1024 * 1024) { showToast("Photo is too large — please use an image under 5MB"); return; }
-  const reader = new FileReader();
-  reader.onload = () => {
-    setPhotoPreview(reader.result);
-    updatePreview();
-  };
-  reader.readAsDataURL(file);
-});
-document.getElementById("photo-remove-btn").addEventListener("click", () => {
-  setPhotoPreview(null);
-  document.getElementById("profile-photo-input").value = "";
-  updatePreview();
-});
-
-/* ── STORAGE HELPERS ──────────────────────────────────────── */
-const DRAFT_KEY = "anicade_cv_draft_v1";
-
-function storageAvailable() {
-  try {
-    const t = "__anicade_test__";
-    window.localStorage.setItem(t, "1");
-    window.localStorage.removeItem(t);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-const STORAGE_OK = storageAvailable();
-
-function safeGetItem(key) {
-  if (!STORAGE_OK) return null;
-  try { return localStorage.getItem(key); } catch { return null; }
-}
-function safeSetItem(key, value) {
-  if (!STORAGE_OK) return false;
-  try { localStorage.setItem(key, value); return true; } catch { return false; }
-}
-function safeRemoveItem(key) {
-  if (!STORAGE_OK) return;
-  try { localStorage.removeItem(key); } catch { /* ignore */ }
+function clearStatus(id) {
+  const b = document.getElementById(id);
+  b.className = 'status-box';
+  b.innerHTML = '';
 }
 
-/* ── TAB SWITCHING ────────────────────────────────────────── */
-document.querySelectorAll(".tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const tab = btn.dataset.tab;
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-    btn.classList.add("active");
-    const panel = document.getElementById(tab + "-panel");
-    if (panel) panel.classList.add("active");
-    if (tab === "recent") renderRecent();
-    if (tab === "templates") buildGallery();
-  });
-});
+/* ---------- QR CODE ---------- */
+function generateQR() {
+  const raw = document.getElementById('qr-input').value.trim();
+  const size = document.getElementById('qr-size').value;
+  const btn = document.getElementById('qr-btn');
+  document.getElementById('qr-result').style.display = 'none';
 
-/* ── REPEAT ITEMS ─────────────────────────────────────────── */
-document.querySelectorAll("[data-add]").forEach(btn => {
-  btn.addEventListener("click", () => addRepeat(btn.dataset.add));
-});
-
-function addRepeat(kind) {
-  const tpl = document.getElementById(kind + "-template");
-  const clone = tpl.content.cloneNode(true);
-  const item = clone.querySelector(".repeat-item");
-  item.querySelector(".remove-btn").addEventListener("click", () => {
-    item.remove(); updatePreview();
-  });
-  const aiBtn = item.querySelector("[data-repeat-field].ai-enhance-btn");
-  if (aiBtn) {
-    aiBtn.addEventListener("click", () => {
-      const field = aiBtn.dataset.repeatField;
-      const ta = item.querySelector("[data-field='" + field + "']");
-      aiEnhanceField(ta, "bullet points for a CV work experience entry");
-    });
-  }
-  const spellBtn = item.querySelector("[data-repeat-field].spell-btn");
-  if (spellBtn) {
-    spellBtn.addEventListener("click", () => {
-      const field = spellBtn.dataset.repeatField;
-      const ta = item.querySelector("[data-field='" + field + "']");
-      runSpellCheck(ta, spellBtn);
-    });
-  }
-  item.querySelectorAll("input, textarea").forEach(el => {
-    el.addEventListener("input", updatePreview);
-  });
-  document.getElementById(kind + "-list").appendChild(item);
-}
-
-/* ── PROGRESS METER ───────────────────────────────────────── */
-const TRACKED = ["fullName","targetRole","email","phone","location","summary","skills"];
-function updateCompletion() {
-  const form = document.getElementById("cv-form");
-  let filled = 0;
-  TRACKED.forEach(n => {
-    const el = form.elements[n];
-    if (el && el.value.trim()) filled++;
-  });
-  const expItems = document.querySelectorAll("#experience-list .repeat-item");
-  if (expItems.length > 0) filled++;
-  const pct = Math.round((filled / (TRACKED.length + 1)) * 100);
-  document.getElementById("completion-label").textContent = pct + "%";
-  document.getElementById("completion-bar").style.width = pct + "%";
-}
-
-/* ── FIELD VALIDATION ─────────────────────────────────────── */
-function isValidEmail(v) {
-  if (!v) return true; // optional field
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-}
-function isValidPhone(v) {
-  if (!v) return true; // optional field
-  return /^[+()0-9][0-9\s().-]{6,}$/.test(v);
-}
-function setFieldError(input, message) {
-  clearFieldError(input);
-  if (!message) return;
-  input.classList.add("input-invalid");
-  const msg = document.createElement("span");
-  msg.className = "field-error-msg";
-  msg.textContent = message;
-  input.insertAdjacentElement("afterend", msg);
-}
-function clearFieldError(input) {
-  input.classList.remove("input-invalid");
-  const next = input.nextElementSibling;
-  if (next && next.classList && next.classList.contains("field-error-msg")) next.remove();
-}
-function attachValidation() {
-  const emailInput = document.querySelector('[name="email"]');
-  if (emailInput) {
-    emailInput.addEventListener("blur", () => {
-      setFieldError(emailInput, isValidEmail(emailInput.value.trim()) ? "" : "That doesn't look like a valid email — check for a missing @ or domain.");
-    });
-  }
-  const phoneInput = document.querySelector('[name="phone"]');
-  if (phoneInput) {
-    phoneInput.addEventListener("blur", () => {
-      setFieldError(phoneInput, isValidPhone(phoneInput.value.trim()) ? "" : "That doesn't look like a valid phone number.");
-    });
-  }
-  ["fullName", "targetRole"].forEach(name => {
-    const el = document.querySelector('[name="' + name + '"]');
-    if (!el) return;
-    el.addEventListener("blur", () => {
-      setFieldError(el, el.value.trim() ? "" : "This helps employers identify you — please fill it in.");
-    });
-  });
-}
-
-/* ── PREVIEW BUILDER ──────────────────────────────────────── */
-function getFormData() {
-  const form = document.getElementById("cv-form");
-  const d = {};
-  new FormData(form).forEach((v,k) => d[k] = v.trim());
-  d.experience = [];
-  document.querySelectorAll("#experience-list .repeat-item").forEach(item => {
-    const obj = {};
-    item.querySelectorAll("[data-field]").forEach(el => obj[el.dataset.field] = el.value.trim());
-    d.experience.push(obj);
-  });
-  d.education = [];
-  document.querySelectorAll("#education-list .repeat-item").forEach(item => {
-    const obj = {};
-    item.querySelectorAll("[data-field]").forEach(el => obj[el.dataset.field] = el.value.trim());
-    d.education.push(obj);
-  });
-  d.photo = currentPhoto || "";
-  return d;
-}
-
-function detailLines(str) {
-  if (!str) return [];
-  return str.split("\n").map(l => l.trim()).filter(Boolean);
-}
-
-function escHtml(str) {
-  return String(str || "")
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-
-function initials(name) {
-  return (name || "?").split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase();
-}
-
-function avatarHtml(d, size) {
-  size = size || 80;
-  if (d.photo) {
-    return `<img src="${d.photo}" alt="Profile photo" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;display:block;flex-shrink:0">`;
-  }
-  const fontSize = Math.round(size * 0.35);
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--cv-accent);display:grid;place-items:center;font-size:${fontSize}px;font-weight:900;color:white;font-family:var(--cv-font);flex-shrink:0">${escHtml(initials(d.fullName))}</div>`;
-}
-
-/* contact row helper */
-function contactRow(icon, text) {
-  if (!text) return "";
-  return `<div class="cv-contact-item">
-    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">${icon}</svg>
-    <span>${escHtml(text)}</span>
-  </div>`;
-}
-const ICONS = {
-  email: '<path d="M4 4h16v16H4z" stroke="none"/><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
-  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.61 19 19.45 19.45 0 0 1 5 12.39a19.79 19.79 0 0 1-2.92-8.18A2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
-  loc:   '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
-  web:   '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>',
-};
-
-/* ---- MODERN TEMPLATE ---- */
-function buildModern(d) {
-  const skills = d.skills ? d.skills.split(",").map(s=>s.trim()).filter(Boolean) : [];
-  const sidebar = `
-    <div class="cv-sidebar">
-      <div style="margin-bottom:18px">${avatarHtml(d, 80)}</div>
-      <div class="cv-name">${escHtml(d.fullName||"Your Name")}</div>
-      <div class="cv-role">${escHtml(d.targetRole||"Your Role")}</div>
-      <div class="cv-section">
-        <h3>Contact</h3>
-        ${contactRow(ICONS.email, d.email)}
-        ${contactRow(ICONS.phone, d.phone)}
-        ${contactRow(ICONS.loc,   d.location)}
-        ${contactRow(ICONS.web,   d.portfolio)}
-      </div>
-      ${skills.length ? `<div class="cv-section"><h3>Skills</h3>
-        ${skills.map(s=>`<span class="cv-skill-pill">${escHtml(s)}</span>`).join("")}
-      </div>` : ""}
-      ${d.languages ? `<div class="cv-section"><h3>Languages</h3>
-        <ul class="cv-list">${d.languages.split(",").map(l=>`<li>${escHtml(l.trim())}</li>`).join("")}</ul>
-      </div>` : ""}
-      ${d.availability ? `<div class="cv-section"><h3>Availability</h3><p>${escHtml(d.availability)}</p></div>` : ""}
-      ${d.nationality  ? `<div class="cv-section"><h3>Nationality</h3><p>${escHtml(d.nationality)}</p></div>` : ""}
-    </div>`;
-
-  const expHtml = d.experience.map(e => `<div class="cv-item">
-    <div class="cv-item-role">${escHtml(e.role||"Role")}</div>
-    <div class="cv-item h4" style="font-size:13px;font-weight:700;color:#111827">${escHtml(e.company||"Company")}</div>
-    <div class="cv-meta">${escHtml(e.dates||"")}${e.place ? " &bull; " + escHtml(e.place) : ""}</div>
-    ${e.details ? `<ul class="cv-list" style="margin-top:8px;padding-left:16px;list-style:disc">${detailLines(e.details).map(l=>`<li>${escHtml(l)}</li>`).join("")}</ul>` : ""}
-  </div>`).join("");
-
-  const eduHtml = d.education.map(e => `<div class="cv-item">
-    <div style="font-size:14px;font-weight:700;color:#111827">${escHtml(e.qualification||"Qualification")}</div>
-    <div style="font-size:13px;color:#374151">${escHtml(e.institution||"")}</div>
-    <div class="cv-meta">${escHtml(e.dates||"")}${e.place ? " &bull; " + escHtml(e.place) : ""}</div>
-    ${e.notes ? `<p style="font-size:12px;color:#6b7280;margin:4px 0 0">${escHtml(e.notes)}</p>` : ""}
-  </div>`).join("");
-
-  const certLines  = detailLines(d.certifications).map(l=>`<li>${escHtml(l)}</li>`).join("");
-  const projLines  = detailLines(d.projects).map(l=>`<li>${escHtml(l)}</li>`).join("");
-  const awardLines = detailLines(d.awards).map(l=>`<li>${escHtml(l)}</li>`).join("");
-
-  const main = `
-    <div class="cv-main">
-      ${d.summary ? `<div class="cv-section"><h3>Professional Profile</h3><p>${escHtml(d.summary)}</p></div>` : ""}
-      ${d.experience.length ? `<div class="cv-section"><h3>Work Experience</h3>${expHtml}</div>` : ""}
-      ${d.education.length  ? `<div class="cv-section"><h3>Education</h3>${eduHtml}</div>` : ""}
-      ${projLines  ? `<div class="cv-section"><h3>Projects</h3><ul class="cv-list" style="padding-left:16px;list-style:disc">${projLines}</ul></div>` : ""}
-      ${certLines  ? `<div class="cv-section"><h3>Certifications</h3><ul class="cv-list" style="padding-left:16px;list-style:disc">${certLines}</ul></div>` : ""}
-      ${awardLines ? `<div class="cv-section"><h3>Awards & Achievements</h3><ul class="cv-list" style="padding-left:16px;list-style:disc">${awardLines}</ul></div>` : ""}
-      ${d.references ? `<div class="cv-section"><h3>References</h3><p>${escHtml(d.references)}</p></div>` : ""}
-      <div class="cv-footer-note">CV created with ANICADE.CV — anicadetech.xyz</div>
-    </div>`;
-
-  return `<div class="cv-page">${sidebar}${main}</div>`;
-}
-
-/* ---- CLASSIC TEMPLATE ---- */
-function buildClassic(d) {
-  const skills = d.skills ? d.skills.split(",").map(s=>s.trim()).filter(Boolean) : [];
-  const expHtml = d.experience.map(e => `<div class="cv-item">
-    <div style="display:flex;justify-content:space-between;align-items:baseline">
-      <div style="font-size:14px;font-weight:700;color:#111827">${escHtml(e.role||"Role")} — ${escHtml(e.company||"Company")}</div>
-      <div class="cv-meta">${escHtml(e.dates||"")}</div>
-    </div>
-    ${e.place ? `<div class="cv-meta" style="margin-bottom:6px">${escHtml(e.place)}</div>` : ""}
-    ${e.details ? `<ul style="margin:6px 0 0 18px;padding:0;list-style:disc">${detailLines(e.details).map(l=>`<li style="font-size:12.5px;color:#374151;margin-bottom:3px">${escHtml(l)}</li>`).join("")}</ul>` : ""}
-  </div>`).join("");
-
-  const eduHtml = d.education.map(e => `<div class="cv-item">
-    <div style="display:flex;justify-content:space-between;align-items:baseline">
-      <div style="font-size:14px;font-weight:700;color:#111827">${escHtml(e.qualification||"Qualification")}, ${escHtml(e.institution||"")}</div>
-      <div class="cv-meta">${escHtml(e.dates||"")}</div>
-    </div>
-    ${e.notes ? `<p style="font-size:12px;color:#6b7280;margin:4px 0 0">${escHtml(e.notes)}</p>` : ""}
-  </div>`).join("");
-
-  const contacts = [d.email, d.phone, d.location, d.portfolio].filter(Boolean).map(c => `<span style="font-size:12.5px;color:#4b5563">${escHtml(c)}</span>`).join(" &nbsp;|&nbsp; ");
-  const certLines  = detailLines(d.certifications).map(l=>`<li>${escHtml(l)}</li>`).join("");
-  const projLines  = detailLines(d.projects).map(l=>`<li>${escHtml(l)}</li>`).join("");
-  const awardLines = detailLines(d.awards).map(l=>`<li>${escHtml(l)}</li>`).join("");
-
-  return `<div class="cv-page" style="display:block;padding:40px 52px">
-    <div style="border-bottom:3px solid var(--cv-accent);padding-bottom:18px;margin-bottom:22px;display:flex;align-items:center;gap:18px">
-      ${avatarHtml(d, 64)}
-      <div>
-        <div style="font-size:34px;font-weight:800;color:#111827;font-family:var(--cv-font)">${escHtml(d.fullName||"Your Name")}</div>
-        <div style="font-size:14px;font-weight:800;color:var(--cv-accent);text-transform:uppercase;letter-spacing:.8px;margin:4px 0 10px">${escHtml(d.targetRole||"")}</div>
-        <div>${contacts}</div>
-      </div>
-    </div>
-    ${d.summary ? `<div class="cv-section"><h3>${escHtml("Professional Profile")}</h3><p>${escHtml(d.summary)}</p></div>` : ""}
-    ${skills.length ? `<div class="cv-section"><h3>Skills</h3><p>${skills.map(s=>`<span class="cv-skill-pill">${escHtml(s)}</span>`).join(" ")}</p></div>` : ""}
-    ${d.experience.length ? `<div class="cv-section"><h3>Work Experience</h3>${expHtml}</div>` : ""}
-    ${d.education.length  ? `<div class="cv-section"><h3>Education</h3>${eduHtml}</div>` : ""}
-    ${projLines  ? `<div class="cv-section"><h3>Projects</h3><ul style="margin:0 0 0 18px;padding:0;list-style:disc">${projLines}</ul></div>` : ""}
-    ${certLines  ? `<div class="cv-section"><h3>Certifications</h3><ul style="margin:0 0 0 18px;padding:0;list-style:disc">${certLines}</ul></div>` : ""}
-    ${awardLines ? `<div class="cv-section"><h3>Awards & Achievements</h3><ul style="margin:0 0 0 18px;padding:0;list-style:disc">${awardLines}</ul></div>` : ""}
-    ${d.languages||d.availability||d.nationality ? `<div class="cv-section"><h3>Additional Information</h3>
-      ${d.languages ? `<p><strong>Languages:</strong> ${escHtml(d.languages)}</p>` : ""}
-      ${d.availability ? `<p><strong>Availability:</strong> ${escHtml(d.availability)}</p>` : ""}
-      ${d.nationality ? `<p><strong>Nationality:</strong> ${escHtml(d.nationality)}</p>` : ""}
-    </div>` : ""}
-    ${d.references ? `<div class="cv-section"><h3>References</h3><p>${escHtml(d.references)}</p></div>` : ""}
-    <div class="cv-footer-note">CV created with ANICADE.CV — anicadetech.xyz</div>
-  </div>`;
-}
-
-/* ---- EXECUTIVE TEMPLATE ---- */
-function buildExecutive(d) {
-  const skills = d.skills ? d.skills.split(",").map(s=>s.trim()).filter(Boolean) : [];
-  const expHtml = d.experience.map(e => `<div class="cv-item">
-    <div style="font-size:14px;font-weight:700;color:#111827">${escHtml(e.role||"Role")}</div>
-    <div style="font-size:13px;font-weight:600;color:var(--cv-accent)">${escHtml(e.company||"")}</div>
-    <div class="cv-meta" style="margin-bottom:6px">${escHtml(e.dates||"")}${e.place ? " · "+escHtml(e.place):""}</div>
-    ${e.details ? `<ul style="margin:6px 0 0 16px;padding:0;list-style:disc">${detailLines(e.details).map(l=>`<li style="font-size:12.5px;color:#374151;margin-bottom:3px">${escHtml(l)}</li>`).join("")}</ul>` : ""}
-  </div>`).join("");
-  const eduHtml = d.education.map(e => `<div class="cv-item">
-    <div style="font-size:13px;font-weight:700;color:#111827">${escHtml(e.qualification||"Qualification")}</div>
-    <div style="font-size:12px;color:#4b5563">${escHtml(e.institution||"")}</div>
-    <div class="cv-meta">${escHtml(e.dates||"")}</div>
-  </div>`).join("");
-  const certLines  = detailLines(d.certifications).map(l=>`<li style="font-size:12px;margin-bottom:4px">${escHtml(l)}</li>`).join("");
-  const awardLines = detailLines(d.awards).map(l=>`<li style="font-size:12px;margin-bottom:4px">${escHtml(l)}</li>`).join("");
-  const contacts = [
-    d.email ? `<span style="font-size:12px;color:rgba(255,255,255,.75)">${escHtml(d.email)}</span>` : "",
-    d.phone ? `<span style="font-size:12px;color:rgba(255,255,255,.75)">${escHtml(d.phone)}</span>` : "",
-    d.location ? `<span style="font-size:12px;color:rgba(255,255,255,.75)">${escHtml(d.location)}</span>` : "",
-    d.portfolio ? `<span style="font-size:12px;color:rgba(255,255,255,.75)">${escHtml(d.portfolio)}</span>` : "",
-  ].filter(Boolean).join(" &nbsp;|&nbsp; ");
-
-  return `<div class="cv-page">
-    <div style="background:#1a2332;padding:34px 44px;display:flex;align-items:center;gap:20px">
-      ${avatarHtml(d, 72)}
-      <div>
-        <div style="font-size:32px;font-weight:800;color:white;font-family:var(--cv-font);margin-bottom:4px">${escHtml(d.fullName||"Your Name")}</div>
-        <div style="font-size:13px;font-weight:800;color:var(--cv-accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px">${escHtml(d.targetRole||"")}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px 20px">${contacts}</div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:34% 66%">
-      <div style="padding:28px 22px 28px 44px;background:#f7f9fb;border-right:1px solid #e5e7eb">
-        ${skills.length ? `<div class="cv-section"><h3>Core Competencies</h3>${skills.map(s=>`<span class="cv-skill-pill">${escHtml(s)}</span>`).join(" ")}</div>` : ""}
-        ${d.education.length ? `<div class="cv-section"><h3>Education</h3>${eduHtml}</div>` : ""}
-        ${certLines ? `<div class="cv-section"><h3>Certifications</h3><ul style="margin:0 0 0 16px;padding:0;list-style:disc">${certLines}</ul></div>` : ""}
-        ${awardLines ? `<div class="cv-section"><h3>Awards</h3><ul style="margin:0 0 0 16px;padding:0;list-style:disc">${awardLines}</ul></div>` : ""}
-        ${d.languages ? `<div class="cv-section"><h3>Languages</h3><p>${escHtml(d.languages)}</p></div>` : ""}
-        ${d.availability ? `<div class="cv-section"><h3>Availability</h3><p>${escHtml(d.availability)}</p></div>` : ""}
-      </div>
-      <div style="padding:28px 36px 28px 28px">
-        ${d.summary ? `<div class="cv-section"><h3>Executive Summary</h3><p style="font-size:13px;line-height:1.65;color:#374151">${escHtml(d.summary)}</p></div>` : ""}
-        ${d.experience.length ? `<div class="cv-section"><h3>Professional Experience</h3>${expHtml}</div>` : ""}
-        ${d.references ? `<div class="cv-section"><h3>References</h3><p style="font-size:12.5px;color:#374151">${escHtml(d.references)}</p></div>` : ""}
-        <div class="cv-footer-note">CV created with ANICADE.CV — anicadetech.xyz</div>
-      </div>
-    </div>
-  </div>`;
-}
-
-/* ---- MINIMAL TEMPLATE ---- */
-function buildMinimal(d) {
-  const skills = d.skills ? d.skills.split(",").map(s=>s.trim()).filter(Boolean) : [];
-  const contacts = [d.email, d.phone, d.location, d.portfolio].filter(Boolean).map(c=>`<span style="font-size:12.5px;color:#6b7280">${escHtml(c)}</span>`).join(" &nbsp;·&nbsp; ");
-  const expHtml = d.experience.map(e => `<div class="cv-item">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
-      <div style="font-size:14px;font-weight:700;color:#111827">${escHtml(e.role||"Role")}</div>
-      <div class="cv-meta">${escHtml(e.dates||"")}</div>
-    </div>
-    <div style="font-size:12.5px;color:var(--cv-accent);font-weight:600;margin-bottom:5px">${escHtml(e.company||"")}${e.place?" · "+escHtml(e.place):""}</div>
-    ${e.details ? `<ul style="margin:6px 0 0 16px;padding:0;list-style:disc">${detailLines(e.details).map(l=>`<li style="font-size:12.5px;color:#374151;margin-bottom:3px">${escHtml(l)}</li>`).join("")}</ul>` : ""}
-  </div>`).join("");
-  const eduHtml = d.education.map(e => `<div class="cv-item">
-    <div style="display:flex;justify-content:space-between">
-      <div style="font-size:14px;font-weight:700;color:#111827">${escHtml(e.qualification||"Qualification")}</div>
-      <div class="cv-meta">${escHtml(e.dates||"")}</div>
-    </div>
-    <div style="font-size:12.5px;color:#6b7280">${escHtml(e.institution||"")}</div>
-  </div>`).join("");
-  const certLines  = detailLines(d.certifications).map(l=>`<li style="font-size:12px;margin-bottom:3px">${escHtml(l)}</li>`).join("");
-  const projLines  = detailLines(d.projects).map(l=>`<li style="font-size:12px;margin-bottom:3px">${escHtml(l)}</li>`).join("");
-  const awardLines = detailLines(d.awards).map(l=>`<li style="font-size:12px;margin-bottom:3px">${escHtml(l)}</li>`).join("");
-
-  return `<div class="cv-page" style="display:block;padding:48px 56px">
-    <div style="border-bottom:1px solid #e5e7eb;padding-bottom:22px;margin-bottom:28px;display:flex;align-items:center;gap:18px">
-      ${avatarHtml(d, 68)}
-      <div>
-        <div style="font-size:36px;font-weight:800;color:#111827;letter-spacing:-1px;font-family:var(--cv-font)">${escHtml(d.fullName||"Your Name")}</div>
-        <div style="font-size:13px;font-weight:800;color:var(--cv-accent);text-transform:uppercase;letter-spacing:.8px;margin:5px 0 12px">${escHtml(d.targetRole||"")}</div>
-        <div>${contacts}</div>
-      </div>
-    </div>
-    ${d.summary ? `<div class="cv-section"><h3>Profile</h3><p style="font-size:13px;line-height:1.65;color:#374151;margin:0">${escHtml(d.summary)}</p></div>` : ""}
-    ${skills.length ? `<div class="cv-section"><h3>Skills</h3><div>${skills.map(s=>`<span class="cv-skill-pill">${escHtml(s)}</span>`).join(" ")}</div></div>` : ""}
-    ${d.experience.length ? `<div class="cv-section"><h3>Experience</h3>${expHtml}</div>` : ""}
-    ${d.education.length  ? `<div class="cv-section"><h3>Education</h3>${eduHtml}</div>` : ""}
-    ${projLines  ? `<div class="cv-section"><h3>Projects</h3><ul style="margin:0 0 0 16px;padding:0;list-style:disc">${projLines}</ul></div>` : ""}
-    ${certLines  ? `<div class="cv-section"><h3>Certifications</h3><ul style="margin:0 0 0 16px;padding:0;list-style:disc">${certLines}</ul></div>` : ""}
-    ${awardLines ? `<div class="cv-section"><h3>Awards</h3><ul style="margin:0 0 0 16px;padding:0;list-style:disc">${awardLines}</ul></div>` : ""}
-    ${d.languages||d.availability ? `<div class="cv-section"><h3>Additional</h3>
-      ${d.languages ? `<p style="margin:0 0 4px;font-size:12.5px;color:#374151"><strong>Languages:</strong> ${escHtml(d.languages)}</p>` : ""}
-      ${d.availability ? `<p style="margin:0;font-size:12.5px;color:#374151"><strong>Availability:</strong> ${escHtml(d.availability)}</p>` : ""}
-    </div>` : ""}
-    ${d.references ? `<div class="cv-section"><h3>References</h3><p style="font-size:12.5px;color:#374151;margin:0">${escHtml(d.references)}</p></div>` : ""}
-    <div class="cv-footer-note">CV created with ANICADE.CV — anicadetech.xyz</div>
-  </div>`;
-}
-
-function updatePreview() {
-  const d = getFormData();
-  const preview = document.getElementById("cv-preview");
-  preview.className = "cv-document " + currentTemplate.class;
-  preview.style.setProperty("--cv-accent", currentAccent);
-  preview.style.setProperty("--cv-font", "'" + (d.cvFont || "Inter") + "'");
-
-  let html = "";
-  switch (currentTemplate.id) {
-    case "classic":   html = buildClassic(d);   break;
-    case "executive": html = buildExecutive(d); break;
-    case "minimal":   html = buildMinimal(d);   break;
-    default:          html = buildModern(d);     break;
-  }
-  preview.innerHTML = html;
-
-  const name = d.fullName || "";
-  const role = d.targetRole || "";
-  document.getElementById("preview-title").textContent =
-    name ? name + (role ? " — " + role : "") : "Your CV is taking shape";
-
-  updateCompletion();
-  scheduleDraftSave();
-}
-
-/* live form events */
-document.getElementById("cv-form").addEventListener("input", updatePreview);
-
-/* ── TOOLBAR BUTTONS ──────────────────────────────────────── */
-document.getElementById("print-button").addEventListener("click", () => window.print());
-document.getElementById("pdf-button").addEventListener("click", downloadPDF);
-
-document.getElementById("clear-button").addEventListener("click", () => {
-  if (!confirm("Clear all form data?")) return;
-  document.getElementById("cv-form").reset();
-  document.getElementById("experience-list").innerHTML = "";
-  document.getElementById("education-list").innerHTML = "";
-  document.getElementById("profile-photo-input").value = "";
-  setPhotoPreview(null);
-  safeRemoveItem(DRAFT_KEY);
-  document.getElementById("draft-banner").hidden = true;
-  updatePreview();
-});
-
-document.getElementById("sample-button").addEventListener("click", () => {
-  const form = document.getElementById("cv-form");
-  const set = (n,v) => { if(form.elements[n]) form.elements[n].value = v; };
-  set("fullName",      "Mutale Chanda");
-  set("targetRole",    "Software Developer");
-  set("email",         "mutale.chanda@email.com");
-  set("phone",         "+260 977 123 456");
-  set("location",      "Lusaka, Zambia");
-  set("portfolio",     "https://linkedin.com/in/mutalechanda");
-  set("summary",       "Ambitious software developer with 4 years' experience building scalable web applications for Zambian SMEs and international clients. Proficient in JavaScript, Python and cloud deployment. Passionate about using technology to solve real-world problems across Africa.");
-  set("skills",        "JavaScript, Python, React, Node.js, REST APIs, PostgreSQL, Git, Docker, Figma");
-  set("projects",      "ANICADE Tech Platform — built multi-page web platform with JSONBin backend, EmailJS and PWA features\nZedMarket — e-commerce site for Zambian vendors with mobile-money payment integration");
-  set("certifications","AWS Cloud Practitioner, Amazon Web Services, 2023\nGoogle Analytics Certified, Google, 2022");
-  set("awards",        "Best Developer — ZICTA Digital Innovation Awards 2023\nTop Performer — Roan Antelope Ltd Q1 2022");
-  set("languages",     "English (Fluent), Bemba (Native), Nyanja (Conversational)");
-  set("availability",  "2 weeks notice");
-  set("references",    "Available on request");
-  set("nationality",   "Zambian");
-
-  document.getElementById("experience-list").innerHTML = "";
-  document.getElementById("education-list").innerHTML = "";
-
-  addRepeat("experience");
-  const expItem = document.querySelector("#experience-list .repeat-item");
-  expItem.querySelector("[data-field=role]").value    = "Lead Frontend Developer";
-  expItem.querySelector("[data-field=company]").value = "ANICADE Tech";
-  expItem.querySelector("[data-field=dates]").value   = "Jan 2022 – Present";
-  expItem.querySelector("[data-field=place]").value   = "Lusaka, Zambia";
-  expItem.querySelector("[data-field=details]").value =
-    "Led development of anicadetech.xyz from ground up using vanilla HTML/CSS/JS\nBuilt agent portal, admin dashboard and EmailJS-integrated application system\nIntegrated JSONBin as lightweight backend — 40% reduction in infrastructure costs\nMentored 2 junior developers in responsive design and API integration";
-
-  addRepeat("education");
-  const eduItem = document.querySelector("#education-list .repeat-item");
-  eduItem.querySelector("[data-field=qualification]").value = "Bachelor of Science in Computer Science";
-  eduItem.querySelector("[data-field=institution]").value   = "University of Zambia";
-  eduItem.querySelector("[data-field=dates]").value         = "2017 – 2021";
-  eduItem.querySelector("[data-field=place]").value         = "Lusaka, Zambia";
-  eduItem.querySelector("[data-field=notes]").value         = "Graduated with Merit. Final year project: Smart agricultural advisory system using ML.";
-
-  updatePreview();
-});
-
-document.getElementById("html-button").addEventListener("click", () => {
-  const d = getFormData();
-  const preview = document.getElementById("cv-preview").outerHTML;
-  const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escHtml(d.fullName||"CV")} — CV</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>body{margin:0;background:#e5e7eb;font-family:Inter,sans-serif;display:flex;justify-content:center;padding:40px 16px}
-.cv-document{--cv-accent:${currentAccent};--cv-font:'Inter'}
-${document.querySelector("style").textContent}
-</style></head><body>${preview}</body></html>`], {type:"text/html"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = (d.fullName || "CV").replace(/\s+/g,"_") + "_CV.html";
-  a.click();
-  showToast("CV exported as HTML");
-});
-
-/* ── PDF DOWNLOAD (separate from browser Print) ──────────────
-   Uses html2pdf.js (jsPDF + html2canvas bundle, loaded from a public
-   CDN) to rasterize the exact preview markup into a real multi-page
-   A4 PDF file and trigger a direct download — independent of the
-   browser's own Print dialog, which some users can't get to save
-   correctly. Print (window.print()) is still available separately. */
-async function downloadPDF() {
-  if (typeof html2pdf === "undefined") {
-    showToast("PDF engine failed to load — check your internet connection and try again");
-    return;
-  }
-  const btn = document.getElementById("pdf-button");
-  const original = btn.textContent;
-  const source = document.getElementById("cv-preview");
-  if (!source || !source.querySelector(".cv-page")) {
-    showToast("Nothing to export yet — fill in some details first");
-    return;
-  }
+  if (!raw) { setStatus('qr-status', 'error', '⚠ Paste a link or some text first.'); return; }
 
   btn.disabled = true;
-  btn.textContent = "Generating PDF…";
+  setStatus('qr-status', 'loading', 'Generating your QR code…');
 
-  /* Render an off-screen, full-scale clone so on-screen zoom/scroll
-     never affects the captured output. Positioned at (0,0) with a
-     negative z-index (rather than a negative left offset) so it never
-     throws off html2canvas's capture origin — a negative left offset
-     is what was causing the left edge of the PDF to get clipped. */
-  const clone = source.cloneNode(true);
-  clone.querySelectorAll(".cv-page").forEach(p => { p.style.boxShadow = "none"; p.style.margin = "0"; });
-  clone.style.width = "210mm";
+  const apiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size +
+                 '&data=' + encodeURIComponent(raw);
 
-  const wrapper = document.createElement("div");
-  wrapper.style.position = "absolute";
-  wrapper.style.top = "0";
-  wrapper.style.left = "0";
-  wrapper.style.zIndex = "-1";
-  wrapper.style.background = "#ffffff";
-  document.body.style.position = "relative";
-  wrapper.appendChild(clone);
-  document.body.appendChild(wrapper);
-
-  /* Let the browser finish laying out and painting the clone (fonts,
-     images, multi-page flow) before we measure its height — measuring
-     too early was part of what caused the bottom of long CVs to be
-     cut off in the exported PDF. */
-  await new Promise(resolve => {
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    } else {
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
-    }
-  });
-
-  const d = getFormData();
-  const filename = (d.fullName || "CV").replace(/\s+/g, "_") + "_CV.pdf";
-
-  const opt = {
-    margin: 0,
-    filename,
-    image: { type: "jpeg", quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      /* windowHeight must match the FULL rendered height of the clone,
-         not just the browser's viewport height — otherwise html2canvas
-         only captures what would have fit on-screen and everything
-         below that gets cropped out of the final PDF. */
-      windowWidth: clone.scrollWidth,
-      windowHeight: clone.scrollHeight,
-      scrollX: 0,
-      scrollY: 0
-    },
-    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    pagebreak: { mode: ["css", "legacy"] }
-  };
-
-  try {
-    await html2pdf().set(opt).from(clone).save();
-    showToast("PDF downloaded");
-  } catch (err) {
-    showToast("Couldn't generate the PDF — try the Print button and choose 'Save as PDF' instead");
-  } finally {
-    document.body.removeChild(wrapper);
+  const img = document.getElementById('qr-img');
+  img.onload = () => {
+    clearStatus('qr-status');
+    setStatus('qr-status', 'success', '✓ QR code ready — click Download PNG to save.');
+    document.getElementById('qr-info').innerHTML =
+      'Size: <span>' + size + '×' + size + '</span> &nbsp;·&nbsp; Content: <span>' +
+      (raw.length > 40 ? raw.slice(0, 40) + '…' : raw) + '</span>';
+    document.getElementById('qr-download').href = apiUrl;
+    document.getElementById('qr-result').style.display = 'block';
     btn.disabled = false;
-    btn.textContent = original;
-  }
-}
-
-/* ── TEMPLATE GALLERY ─────────────────────────────────────── */
-function buildGallery() {
-  const grid = document.getElementById("template-grid");
-  grid.innerHTML = "";
-  TEMPLATES.forEach(tpl => {
-    const card = document.createElement("div");
-    card.className = "template-card" + (tpl.id === currentTemplate.id ? " selected" : "");
-    card.innerHTML = `
-      <div class="template-thumb">
-        <div class="template-thumb-inner" id="thumb-${tpl.id}"></div>
-      </div>
-      <div class="template-info">
-        <div class="template-name">${tpl.name}</div>
-        <div class="template-desc">${tpl.desc}</div>
-        <div class="template-accents" id="accents-${tpl.id}">
-          ${tpl.accents.map((a,i) => `<button type="button" class="accent-dot ${i===0&&tpl.id===currentTemplate.id?'active':''}" data-tpl="${tpl.id}" data-hex="${a.hex}" aria-label="${a.label} accent" title="${a.label}" style="background:${a.hex}"></button>`).join("")}
-        </div>
-        <button type="button" class="select-template-btn ${tpl.id===currentTemplate.id?'selected-state':''}" data-tpl="${tpl.id}">
-          ${tpl.id===currentTemplate.id ? "Currently selected" : "Use this template"}
-        </button>
-      </div>`;
-    grid.appendChild(card);
-  });
-
-  /* render mini previews */
-  setTimeout(() => {
-    const d = getFormData();
-    TEMPLATES.forEach(tpl => {
-      const thumb = document.getElementById("thumb-"+tpl.id);
-      if (!thumb) return;
-      const prev = document.createElement("div");
-      prev.className = "cv-document " + tpl.class;
-      prev.style.cssText = `--cv-accent:${tpl.accents[0].hex};--cv-font:'Inter';transform:scale(.38) translateX(-50%) translateY(-50%);transform-origin:0 0;position:absolute;top:50%;left:50%;width:210mm;pointer-events:none`;
-      let html = "";
-      switch (tpl.id) {
-        case "classic":   html = buildClassic(d);   break;
-        case "executive": html = buildExecutive(d); break;
-        case "minimal":   html = buildMinimal(d);   break;
-        default:          html = buildModern(d);     break;
-      }
-      prev.innerHTML = html;
-      thumb.innerHTML = "";
-      thumb.appendChild(prev);
-    });
-  }, 80);
-}
-
-/* Delegated listeners for the template gallery — bound once, survive every
-   re-render of #template-grid (buildGallery replaces innerHTML each time),
-   which is what makes these buttons reliable across devices. */
-document.getElementById("template-grid").addEventListener("click", (e) => {
-  const dot = e.target.closest(".accent-dot");
-  if (dot) {
-    const tplId = dot.dataset.tpl;
-    const hex = dot.dataset.hex;
-    const tpl = TEMPLATES.find(t => t.id === tplId);
-    if (!tpl) return;
-    currentAccent = hex;
-    if (tplId !== currentTemplate.id) {
-      currentTemplate = tpl;
-      buildGallery();
-      showToast("Template switched to " + tpl.name);
-    } else {
-      document.querySelectorAll("#accents-"+tplId+" .accent-dot").forEach(d => d.classList.remove("active"));
-      dot.classList.add("active");
-    }
-    updatePreview();
-    return;
-  }
-  const selectBtn = e.target.closest(".select-template-btn");
-  if (selectBtn) {
-    const tpl = TEMPLATES.find(t => t.id === selectBtn.dataset.tpl);
-    if (!tpl) return;
-    currentTemplate = tpl;
-    currentAccent   = tpl.accents[0].hex;
-    buildGallery();
-    updatePreview();
-    showToast("Template switched to " + tpl.name);
-  }
-});
-
-/* ── DRAFT AUTO-SAVE / RESTORE ────────────────────────────── */
-let draftSaveTimer = null;
-function scheduleDraftSave() {
-  clearTimeout(draftSaveTimer);
-  draftSaveTimer = setTimeout(saveDraft, 500);
-}
-function saveDraft() {
-  const payload = {
-    data: getFormData(),
-    template: currentTemplate.id,
-    accent: currentAccent,
-    savedAt: Date.now()
   };
-  safeSetItem(DRAFT_KEY, JSON.stringify(payload));
+  img.onerror = () => {
+    setStatus('qr-status', 'error', '✕ Could not generate a QR code. Check your input and try again.');
+    btn.disabled = false;
+  };
+  img.src = apiUrl;
 }
-function draftHasContent(data) {
-  if (!data) return false;
-  return !!(data.fullName || data.targetRole || data.summary ||
-    (data.experience && data.experience.length) ||
-    (data.education && data.education.length));
-}
-/* Restores any saved draft automatically on load, so refreshing the page
-   or closing the tab never wipes out what the user typed. */
-function checkForDraft() {
-  const raw = safeGetItem(DRAFT_KEY);
-  if (!raw) return;
+
+/* ---------- SHORT LINK ---------- */
+async function shortenLink() {
+  const raw = document.getElementById('short-input').value.trim();
+  const btn = document.getElementById('short-btn');
+  document.getElementById('short-result').style.display = 'none';
+
+  if (!raw) { setStatus('short-status', 'error', '⚠ Paste a URL first.'); return; }
+  if (!/^https?:\/\//i.test(raw)) { setStatus('short-status', 'error', '⚠ URL must start with http:// or https://'); return; }
+
+  btn.disabled = true;
+  setStatus('short-status', 'loading', 'Shortening your link…');
+
   try {
-    const parsed = JSON.parse(raw);
-    if (draftHasContent(parsed.data)) {
-      const tpl = TEMPLATES.find(t => t.id === parsed.template);
-      loadCVData({ data: parsed.data, template: tpl ? tpl.id : "modern", accent: parsed.accent });
-      document.getElementById("draft-banner").hidden = false;
+    const res = await fetch('https://spoo.me/api/v1/shorten', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ long_url: raw })
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.short_url) {
+      throw new Error(data.error || data.message || 'unknown');
     }
-  } catch {
-    safeRemoveItem(DRAFT_KEY);
-  }
-}
-document.getElementById("discard-draft-btn").addEventListener("click", () => {
-  if (!confirm("Clear your restored draft and start with a blank CV?")) return;
-  document.getElementById("cv-form").reset();
-  document.getElementById("experience-list").innerHTML = "";
-  document.getElementById("education-list").innerHTML = "";
-  safeRemoveItem(DRAFT_KEY);
-  document.getElementById("draft-banner").hidden = true;
-  updatePreview();
-});
 
-/* ── RECENT CVs ───────────────────────────────────────────── */
-function savedCVs() {
-  try { return JSON.parse(safeGetItem("anicade_cvs") || "{}"); }
-  catch { return {}; }
-}
-function saveCVs(obj) {
-  return safeSetItem("anicade_cvs", JSON.stringify(obj));
-}
+    clearStatus('short-status');
+    setStatus('short-status', 'success', '✓ Link shortened successfully.');
+    document.getElementById('short-info').innerHTML =
+      'Original: <span>' + (raw.length > 45 ? raw.slice(0, 45) + '…' : raw) + '</span>';
+    const openBtn = document.getElementById('short-open');
+    openBtn.href = data.short_url;
+    openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> ' + data.short_url;
 
-document.getElementById("save-cv-btn").addEventListener("click", () => {
-  const name = document.getElementById("save-name-input").value.trim();
-  if (!name) { showToast("Enter a name for this CV first"); return; }
-  if (!STORAGE_OK) { showToast("Storage is unavailable in this browser mode"); return; }
-  const cvs = savedCVs();
-  cvs[name] = { data: getFormData(), template: currentTemplate.id, accent: currentAccent, saved: new Date().toLocaleDateString() };
-  const ok = saveCVs(cvs);
-  document.getElementById("save-name-input").value = "";
-  renderRecent();
-  showToast(ok ? "CV saved: " + name : "Could not save — storage may be full or blocked");
-});
+    const copyBtn = document.getElementById('short-copy');
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(data.short_url).then(() => {
+        copyBtn.textContent = '✓ Copied!';
+        setTimeout(() => {
+          copyBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Link';
+        }, 2000);
+      });
+    };
 
-function renderRecent() {
-  document.getElementById("storage-warning").hidden = STORAGE_OK;
-  const grid = document.getElementById("recent-grid");
-  const cvs = savedCVs();
-  const keys = Object.keys(cvs);
-  if (!keys.length) {
-    grid.innerHTML = `<div class="empty-recent" style="grid-column:1/-1"><p>No saved CVs yet. Build a CV and save it with a name above.</p></div>`;
-    return;
-  }
-  grid.innerHTML = keys.map(k => {
-    const cv = cvs[k];
-    return `<div class="recent-card">
-      <h4>${escHtml(k)}</h4>
-      <div class="rc-meta">${escHtml(cv.data.fullName||"")} · ${escHtml(cv.data.targetRole||"")} · Saved ${escHtml(cv.saved||"")}</div>
-      <div class="recent-actions">
-        <button type="button" class="rc-load-btn" data-key="${escHtml(k)}">Load</button>
-        <button type="button" class="rc-del-btn" data-key="${escHtml(k)}">Delete</button>
-      </div>
-    </div>`;
-  }).join("");
-}
-
-/* Delegated listeners for Recent CV cards — same reasoning as the template
-   grid: survives every re-render, no risk of stale/duplicate bindings. */
-document.getElementById("recent-grid").addEventListener("click", (e) => {
-  const loadBtn = e.target.closest(".rc-load-btn");
-  if (loadBtn) {
-    const cv = savedCVs()[loadBtn.dataset.key];
-    if (!cv) return;
-    loadCVData(cv);
-    document.querySelector('[data-tab="builder"]').click();
-    showToast("CV loaded: " + loadBtn.dataset.key);
-    return;
-  }
-  const delBtn = e.target.closest(".rc-del-btn");
-  if (delBtn) {
-    if (!confirm("Delete saved CV: " + delBtn.dataset.key + "?")) return;
-    const cvs = savedCVs();
-    delete cvs[delBtn.dataset.key];
-    saveCVs(cvs);
-    renderRecent();
-  }
-});
-
-function loadCVData(cv) {
-  const form = document.getElementById("cv-form");
-  const d = cv.data;
-  const set = (n,v) => { if(form.elements[n]) form.elements[n].value = v||""; };
-  ["fullName","targetRole","email","phone","location","portfolio","summary","skills","projects","certifications","awards","languages","availability","references","nationality"].forEach(k => set(k, d[k]));
-  setPhotoPreview(d.photo || null);
-
-  document.getElementById("experience-list").innerHTML = "";
-  document.getElementById("education-list").innerHTML = "";
-  (d.experience||[]).forEach(e => {
-    addRepeat("experience");
-    const items = document.querySelectorAll("#experience-list .repeat-item");
-    const item = items[items.length-1];
-    Object.entries(e).forEach(([k,v]) => {
-      const el = item.querySelector("[data-field="+k+"]");
-      if (el) el.value = v;
-    });
-  });
-  (d.education||[]).forEach(e => {
-    addRepeat("education");
-    const items = document.querySelectorAll("#education-list .repeat-item");
-    const item = items[items.length-1];
-    Object.entries(e).forEach(([k,v]) => {
-      const el = item.querySelector("[data-field="+k+"]");
-      if (el) el.value = v;
-    });
-  });
-
-  const tpl = TEMPLATES.find(t => t.id === cv.template);
-  if (tpl) { currentTemplate = tpl; currentAccent = cv.accent || tpl.accents[0].hex; }
-  updatePreview();
-}
-
-/* ── AI ASSISTANT (logic lives in ai-logic.js, this wires up the UI) ── */
-document.getElementById("ai-fab").addEventListener("click", () => {
-  document.getElementById("ai-panel").classList.toggle("open");
-});
-document.getElementById("ai-close").addEventListener("click", () => {
-  document.getElementById("ai-panel").classList.remove("open");
-});
-
-document.getElementById("ai-input").addEventListener("keydown", e => {
-  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAI(); }
-});
-document.getElementById("ai-send").addEventListener("click", sendAI);
-
-/* render suggestion chips once at load */
-(function renderSuggestionChips() {
-  const wrap = document.getElementById("ai-suggestions");
-  if (!wrap || !window.AnicadeAI) return;
-  const chips = AnicadeAI.SUGGESTED_QUESTIONS.slice(0, 4);
-  wrap.innerHTML = chips.map(q => `<button type="button" class="ai-suggestion-chip">${escHtml(q)}</button>`).join("");
-  wrap.addEventListener("click", (e) => {
-    const chip = e.target.closest(".ai-suggestion-chip");
-    if (!chip) return;
-    document.getElementById("ai-input").value = chip.textContent;
-    sendAI();
-  });
-})();
-
-/* check + display provider status */
-(async function initAIStatus() {
-  const statusEl = document.getElementById("ai-status");
-  if (!window.AnicadeAI) { statusEl.textContent = "unavailable"; statusEl.classList.add("offline"); return; }
-  statusEl.textContent = "checking…";
-  const online = await AnicadeAI.pingProvider();
-  statusEl.textContent = online ? "online" : "offline mode";
-  statusEl.classList.add(online ? "online" : "offline");
-})();
-
-async function sendAI() {
-  const input = document.getElementById("ai-input");
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = "";
-  appendAI("user", msg);
-  const loader = appendAI("ai", "Thinking…", true);
-
-  const d = getFormData();
-  try {
-    const reply = await AnicadeAI.getChatReply(msg, d);
-    loader.remove();
-    appendAI("ai", reply);
+    document.getElementById('short-result').style.display = 'block';
   } catch (err) {
-    loader.remove();
-    appendAI("ai", "Sorry, I couldn't reach any writing service right now. Please check your internet connection and try again in a moment.");
+    setStatus('short-status', 'error', '✕ Could not shorten that link right now. Check the URL and try again.');
   }
+
+  btn.disabled = false;
 }
 
-function appendAI(role, text, loading = false) {
-  const messages = document.getElementById("ai-messages");
-  const div = document.createElement("div");
-  div.className = "ai-msg " + role + (loading ? " loading" : "");
-  div.textContent = text;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
-  return div;
+document.getElementById('qr-input').addEventListener('keydown', e => { if (e.key === 'Enter') generateQR(); });
+document.getElementById('short-input').addEventListener('keydown', e => { if (e.key === 'Enter') shortenLink(); });
+
+/* ---------- SHARED FILE HANDLING ---------- */
+const files = { bg: null, img: null };
+
+function formatBytes(n) {
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / (1024 * 1024)).toFixed(2) + ' MB';
 }
 
-/* AI Enhance inline buttons */
-document.querySelectorAll(".ai-enhance-btn[data-field]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const fieldName = btn.dataset.field;
-    const ta = document.querySelector("[name='" + fieldName + "']");
-    aiEnhanceField(ta, fieldName === "summary" ? "professional CV summary paragraph" : "CV section");
+function setupDropzone(key) {
+  const zone = document.getElementById(key + '-dropzone');
+  const input = document.getElementById(key + '-file');
+
+  input.addEventListener('change', () => { if (input.files[0]) loadFile(key, input.files[0]); });
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag');
+    if (e.dataTransfer.files[0]) loadFile(key, e.dataTransfer.files[0]);
   });
+}
+
+function loadFile(key, file) {
+  if (!file.type.startsWith('image/')) return;
+  files[key] = file;
+
+  const chip = document.getElementById(key + '-chip');
+  const thumb = document.getElementById(key + '-chip-thumb');
+  const name = document.getElementById(key + '-chip-name');
+  const size = document.getElementById(key + '-chip-size');
+  const url = URL.createObjectURL(file);
+
+  thumb.src = url;
+  name.textContent = file.name;
+  size.textContent = formatBytes(file.size);
+  chip.style.display = 'flex';
+  document.getElementById(key + '-dropzone').style.display = 'none';
+  document.getElementById(key + '-btn').disabled = false;
+  document.getElementById(key + '-result').style.display = 'none';
+  clearStatus(key + '-status');
+}
+
+function clearFile(key) {
+  files[key] = null;
+  document.getElementById(key + '-chip').style.display = 'none';
+  document.getElementById(key + '-dropzone').style.display = 'block';
+  document.getElementById(key + '-file').value = '';
+  document.getElementById(key + '-btn').disabled = true;
+  document.getElementById(key + '-result').style.display = 'none';
+  clearStatus(key + '-status');
+}
+
+setupDropzone('bg');
+setupDropzone('img');
+
+document.getElementById('compress-quality').addEventListener('input', e => {
+  document.getElementById('compress-quality-val').textContent = e.target.value + '%';
 });
-document.querySelectorAll(".spell-btn[data-field]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const fieldName = btn.dataset.field;
-    const ta = document.querySelector("[name='" + fieldName + "']");
-    runSpellCheck(ta, btn);
+
+/* ---------- BACKGROUND REMOVER (runs fully on-device) ---------- */
+let bgRemoveFn = null;
+
+async function removeBg() {
+  const file = files.bg;
+  if (!file) return;
+  const btn = document.getElementById('bg-btn');
+  document.getElementById('bg-result').style.display = 'none';
+  btn.disabled = true;
+
+  try {
+    setStatus('bg-status', 'loading', 'Loading the on-device model (first run only)…');
+
+    if (!bgRemoveFn) {
+      const mod = await import('https://esm.sh/@imgly/background-removal@1.5.5');
+      bgRemoveFn = mod.removeBackground;
+    }
+
+    setStatus('bg-status', 'loading', 'Removing the background — this can take a moment…');
+
+    const blob = await bgRemoveFn(file, {
+      progress: (key, current, total) => {
+        const pct = total ? Math.round((current / total) * 100) : 0;
+        setStatus('bg-status', 'loading', 'Processing… ' + pct + '%');
+      }
+    });
+
+    const url = URL.createObjectURL(blob);
+    document.getElementById('bg-preview').src = url;
+    document.getElementById('bg-download').href = url;
+    document.getElementById('bg-download').download = file.name.replace(/\.[^.]+$/, '') + '-no-bg.png';
+    document.getElementById('bg-result').style.display = 'block';
+    clearStatus('bg-status');
+    setStatus('bg-status', 'success', '✓ Background removed — click Download PNG to save.');
+  } catch (err) {
+    setStatus('bg-status', 'error', '✕ Could not process that image. Try a different photo (JPG/PNG/WEBP, under ~10MB works best).');
+  }
+
+  btn.disabled = false;
+}
+
+/* ---------- IMAGE TOOLS: compress / convert / resize (canvas-based) ---------- */
+function loadImageElement(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
   });
-});
+}
 
-async function aiEnhanceField(textarea, context) {
-  if (!textarea) return;
-  const original = textarea.value.trim();
-  if (!original) { showToast("Add some text first, then use AI Enhance"); return; }
-  const d = getFormData();
-  const btns = document.querySelectorAll(".ai-enhance-btn");
-  btns.forEach(b => b.disabled = true);
-  textarea.style.opacity = ".5";
+async function processImage() {
+  const file = files.img;
+  if (!file) return;
+  const btn = document.getElementById('img-btn');
+  document.getElementById('img-result').style.display = 'none';
+  btn.disabled = true;
+  setStatus('img-status', 'loading', 'Processing your image…');
+
   try {
-    const improved = await AnicadeAI.enhanceText(original, context, d.targetRole || "professional");
-    if (improved) {
-      textarea.value = improved.trim();
-      updatePreview();
-      showToast("Text enhanced");
-    } else {
-      showToast("AI enhance returned nothing — try again");
+    const img = await loadImageElement(file);
+    let targetW = img.naturalWidth;
+    let targetH = img.naturalHeight;
+    let mime = file.type || 'image/png';
+    let quality = 0.92;
+    let resultTitle = 'Image ready';
+
+    if (currentITool === 'compress') {
+      quality = parseInt(document.getElementById('compress-quality').value, 10) / 100;
+      mime = (file.type === 'image/png') ? 'image/png' : 'image/jpeg';
+      resultTitle = 'Image compressed';
+    } else if (currentITool === 'convert') {
+      mime = document.getElementById('convert-format').value;
+      resultTitle = 'Image converted';
+    } else if (currentITool === 'resize') {
+      const w = parseInt(document.getElementById('resize-width').value, 10);
+      const h = parseInt(document.getElementById('resize-height').value, 10);
+      if (!w && !h) throw new Error('no_dims');
+      if (w && h) { targetW = w; targetH = h; }
+      else if (w) { targetW = w; targetH = Math.round(img.naturalHeight * (w / img.naturalWidth)); }
+      else { targetH = h; targetW = Math.round(img.naturalWidth * (h / img.naturalHeight)); }
+      resultTitle = 'Image resized';
     }
-  } catch {
-    showToast("AI enhance failed — check connection, using offline suggestions instead");
-    const fallback = AnicadeAI.localEnhance(original);
-    if (fallback && fallback !== original) {
-      textarea.value = fallback;
-      updatePreview();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    if (mime === 'image/jpeg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, targetW, targetH); }
+    ctx.drawImage(img, 0, 0, targetW, targetH);
+
+    const blob = await new Promise(res => canvas.toBlob(res, mime, quality));
+    if (!blob) throw new Error('encode_fail');
+
+    const url = URL.createObjectURL(blob);
+    const ext = mime.split('/')[1].replace('jpeg', 'jpg');
+    const baseName = file.name.replace(/\.[^.]+$/, '');
+
+    document.getElementById('img-preview').src = url;
+    document.getElementById('img-result-title').textContent = resultTitle;
+    document.getElementById('img-download').href = url;
+    document.getElementById('img-download').download = baseName + '-anicade.' + ext;
+
+    const compare = document.getElementById('img-compare');
+    const savedPct = Math.round((1 - blob.size / file.size) * 100);
+    compare.innerHTML =
+      '<span class="compare-stat">Original: ' + formatBytes(file.size) + '</span>' +
+      '<span class="compare-stat">New: ' + formatBytes(blob.size) +
+      (savedPct > 0 ? ' <span>(' + savedPct + '% smaller)</span>' : '') + '</span>' +
+      '<span class="compare-stat">Dimensions: ' + targetW + '×' + targetH + '</span>';
+
+    document.getElementById('img-result').style.display = 'block';
+    clearStatus('img-status');
+    setStatus('img-status', 'success', '✓ Done — click Download Image to save.');
+  } catch (err) {
+    if (err.message === 'no_dims') {
+      setStatus('img-status', 'error', '⚠ Enter at least a width or a height to resize.');
+    } else {
+      setStatus('img-status', 'error', '✕ Could not process that image. Try a different file.');
     }
   }
-  btns.forEach(b => b.disabled = false);
-  textarea.style.opacity = "1";
+
+  btn.disabled = false;
 }
 
-/* ── SPELL CHECK ───────────────────────────────────────────── */
-async function runSpellCheck(textarea, triggerBtn) {
-  if (!textarea) return;
-  const text = textarea.value.trim();
-  if (!text) { showToast("Nothing to check yet"); return; }
-  if (triggerBtn) triggerBtn.disabled = true;
-  try {
-    const issues = await AnicadeAI.checkSpelling(text);
-    if (!issues.length) {
-      showToast("No spelling issues found ✓");
-    } else {
-      appendAI("ai", "Spelling check found " + issues.length + " possible issue" + (issues.length===1?"":"s") + ":\n" +
-        issues.slice(0, 8).map(i => "• \"" + i.bad + "\" → " + (i.suggestions[0] || "check spelling")).join("\n"));
-      document.getElementById("ai-panel").classList.add("open");
-      showToast("Found " + issues.length + " possible spelling issue(s) — see AI panel");
-    }
-  } catch {
-    showToast("Spell check service unavailable right now — your browser's built-in spellcheck (red underlines) still works");
+/* ---------- OCR (pdf.js + tesseract.js, runs fully on-device, persists locally) ---------- */
+window.addEventListener('unhandledrejection', e => {
+  console.error('OCR unhandled error:', e.reason);
+  const panel = document.getElementById('panel-ocr');
+  const box = document.getElementById('ocr-status');
+  if (panel && panel.classList.contains('active') && box) {
+    box.className = 'status-box error';
+    box.innerHTML = '✕ Something went wrong: ' + ((e.reason && e.reason.message) || String(e.reason));
   }
-  if (triggerBtn) triggerBtn.disabled = false;
-}
-
-/* ── PROMO / AD OVERLAY ───────────────────────────────────── */
-function openPromo() {
-  const overlay = document.getElementById("promo-overlay");
-  const fill = document.getElementById("promo-timer-fill");
-  fill.style.animation = "none";
-  void fill.offsetWidth; /* restart animation */
-  fill.style.animation = "promo-countdown 10s linear forwards";
-  overlay.classList.add("open");
-  clearTimeout(window.__promoTimer);
-  window.__promoTimer = setTimeout(closePromo, 10000);
-}
-function closePromo() {
-  document.getElementById("promo-overlay").classList.remove("open");
-  clearTimeout(window.__promoTimer);
-}
-document.getElementById("promo-overlay").addEventListener("click", (e) => {
-  if (e.target.id === "promo-overlay") closePromo();
-});
-document.getElementById("promo-close").addEventListener("click", (e) => {
-  e.stopPropagation();
-  closePromo();
-});
-document.getElementById("promo-card").addEventListener("click", (e) => {
-  if (e.target.closest("#promo-close") || e.target.closest("#promo-cta")) return;
-  window.open("https://www.anicadetech.xyz", "_blank", "noreferrer");
 });
 
-/* ── TOAST ────────────────────────────────────────────────── */
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2800);
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const OCR_POOL_SIZE = 2;
+const OCR_DB_NAME = 'anicade_ocr_v1';
+
+let ocrJobs = [];                     // {id, order, label, fileId, kind:'image'|'pdfpage', pageNum, status, progress, text}
+let ocrFilesMeta = new Map();         // fileId -> { fileId, name, blob }
+let ocrPdfDocCache = new Map();       // fileId -> Promise<pdf.js document>
+let ocrRunning = false;
+let ocrCancelRequested = false;
+let ocrWorkerPool = [];
+let ocrDb = null;
+let ocrWarmupProgress = [];
+const ocrCurrentJobByWorker = new Map();
+
+const ocrDropzone = document.getElementById('ocr-dropzone');
+const ocrFileInput = document.getElementById('ocr-file');
+const ocrQueueEl = document.getElementById('ocr-queue');
+const ocrStartBtn = document.getElementById('ocr-start-btn');
+const ocrClearBtn = document.getElementById('ocr-clear-btn');
+const ocrCancelRow = document.getElementById('ocr-cancel-row');
+const ocrCancelBtn = document.getElementById('ocr-cancel-btn');
+const ocrRetryRow = document.getElementById('ocr-retry-row');
+const ocrRetryEngineBtn = document.getElementById('ocr-retry-engine-btn');
+const ocrProgressTrack = document.getElementById('ocr-progress-track');
+const ocrProgressFill = document.getElementById('ocr-progress-fill');
+const ocrLoadTrack = document.getElementById('ocr-load-track');
+const ocrLoadFill = document.getElementById('ocr-load-fill');
+const ocrLoadLabel = document.getElementById('ocr-load-label');
+const ocrResultBox = document.getElementById('ocr-result');
+const ocrOutputEl = document.getElementById('ocr-output');
+const ocrInfoEl = document.getElementById('ocr-info');
+const ocrDownloadBtn = document.getElementById('ocr-download');
+const ocrCopyBtn = document.getElementById('ocr-copy');
+const ocrRetryFailedBtn = document.getElementById('ocr-retry-failed-btn');
+const ocrRestoreBanner = document.getElementById('ocr-restore-banner');
+const ocrRestoreText = document.getElementById('ocr-restore-text');
+const ocrHandwritingBox = document.getElementById('ocr-handwriting');
+
+function ocrId() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+/* ----- IndexedDB persistence (survives refresh / lost connection; wiped only on Clear) ----- */
+function openOcrDb() {
+  return new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) return reject(new Error('no_idb'));
+    const req = indexedDB.open(OCR_DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', { keyPath: 'fileId' });
+      if (!db.objectStoreNames.contains('jobs')) db.createObjectStore('jobs', { keyPath: 'id' });
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+function idbPut(store, value) {
+  return new Promise((resolve) => {
+    if (!ocrDb) return resolve();
+    try {
+      const tx = ocrDb.transaction(store, 'readwrite');
+      tx.objectStore(store).put(value);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    } catch (e) { resolve(); }
+  });
+}
+function idbGetAll(store) {
+  return new Promise((resolve) => {
+    if (!ocrDb) return resolve([]);
+    try {
+      const tx = ocrDb.transaction(store, 'readonly');
+      const req = tx.objectStore(store).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    } catch (e) { resolve([]); }
+  });
+}
+function idbGet(store, key) {
+  return new Promise((resolve) => {
+    if (!ocrDb) return resolve(null);
+    try {
+      const tx = ocrDb.transaction(store, 'readonly');
+      const req = tx.objectStore(store).get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    } catch (e) { resolve(null); }
+  });
+}
+function idbClearAll() {
+  return new Promise((resolve) => {
+    if (!ocrDb) return resolve();
+    try {
+      const tx = ocrDb.transaction(['files', 'jobs'], 'readwrite');
+      tx.objectStore('files').clear();
+      tx.objectStore('jobs').clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    } catch (e) { resolve(); }
+  });
 }
 
-/* ── INIT ─────────────────────────────────────────────────── */
-attachValidation();
-checkForDraft();
-if (!STORAGE_OK) {
-  document.getElementById("storage-warning").hidden = false;
+async function initOcr() {
+  try { ocrDb = await openOcrDb(); } catch (e) { ocrDb = null; }
+  await restoreOcrState();
 }
-updatePreview();
 
-/* Show the ANICADE Tech promo full-screen for 10 seconds on every page
-   load / reload (not just once per session), a couple seconds after load
-   so it never blocks the first paint of the CV builder. */
-setTimeout(() => {
-  openPromo();
-}, 1500);
+async function restoreOcrState() {
+  if (!ocrDb) return;
+  const savedJobs = await idbGetAll('jobs');
+  if (!savedJobs.length) return;
+  const savedFiles = await idbGetAll('files');
+  savedFiles.forEach(f => ocrFilesMeta.set(f.fileId, f));
+
+  ocrJobs = savedJobs
+    .sort((a, b) => (a.order || 0) - (b.order || 0))
+    .map(j => j.status === 'run' ? { ...j, status: 'wait', progress: 0 } : j);
+
+  renderOcrQueue();
+  renderOcrOutput();
+  ocrStartBtn.disabled = ocrJobs.filter(j => j.status === 'wait').length === 0;
+  ocrClearBtn.disabled = false;
+
+  const doneCount = ocrJobs.filter(j => j.status === 'done').length;
+  const errCount = ocrJobs.filter(j => j.status === 'err').length;
+  ocrRestoreBanner.style.display = 'flex';
+  ocrRestoreText.textContent = 'Restored ' + ocrJobs.length + ' page' + (ocrJobs.length === 1 ? '' : 's') +
+    ' from your last session — ' + doneCount + ' already scanned' +
+    (errCount ? ', ' + errCount + ' failed' : '') + '. Add more files, hit Start to continue, or Clear to wipe it.';
+}
+
+/* ----- File intake ----- */
+ocrFileInput.addEventListener('change', e => addOcrFiles(e.target.files));
+ocrDropzone.addEventListener('dragover', e => { e.preventDefault(); ocrDropzone.classList.add('drag'); });
+ocrDropzone.addEventListener('dragleave', () => ocrDropzone.classList.remove('drag'));
+ocrDropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  ocrDropzone.classList.remove('drag');
+  if (e.dataTransfer.files.length) addOcrFiles(e.dataTransfer.files);
+});
+
+function showLoadProgress(label) {
+  ocrLoadTrack.style.display = 'block';
+  ocrLoadLabel.style.display = 'block';
+  ocrLoadLabel.textContent = label;
+  ocrLoadFill.style.width = '0%';
+}
+function updateLoadProgress(pct, label) {
+  ocrLoadFill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+  if (label) ocrLoadLabel.textContent = label;
+}
+function hideLoadProgress() {
+  setTimeout(() => {
+    ocrLoadTrack.style.display = 'none';
+    ocrLoadLabel.style.display = 'none';
+  }, 350);
+}
+
+function readFileWithProgress(file, label) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    showLoadProgress(label + '…');
+    reader.onprogress = e => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        updateLoadProgress(pct, label + '… ' + pct + '%');
+      }
+    };
+    reader.onload = () => { updateLoadProgress(100, label + '… 100%'); resolve(reader.result); };
+    reader.onerror = () => reject(reader.error || new Error('read_failed'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function addOcrFiles(fileList) {
+  const incoming = Array.from(fileList);
+  let unsupported = 0;
+  clearStatus('ocr-status');
+  ocrRestoreBanner.style.display = 'none';
+
+  for (const file of incoming) {
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const isImage = file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name);
+    if (!isPdf && !isImage) { unsupported++; continue; }
+
+    const fileId = ocrId();
+    let attempt = 0;
+    let ok = false;
+    while (attempt < 3 && !ok) {
+      attempt++;
+      try {
+        if (isPdf) {
+          const buf = await readFileWithProgress(file, 'Reading ' + file.name);
+          const pdf = await pdfjsLib.getDocument({ data: buf.slice(0) }).promise;
+          ocrFilesMeta.set(fileId, { fileId, name: file.name, blob: file });
+          ocrPdfDocCache.set(fileId, Promise.resolve(pdf));
+          await idbPut('files', { fileId, name: file.name, blob: file });
+          for (let p = 1; p <= pdf.numPages; p++) {
+            const job = { id: ocrId(), order: ocrJobs.length, label: file.name + ' — p.' + p, fileId, kind: 'pdfpage', pageNum: p, status: 'wait', progress: 0 };
+            ocrJobs.push(job);
+            await idbPut('jobs', job);
+          }
+        } else {
+          await readFileWithProgress(file, 'Reading ' + file.name);
+          ocrFilesMeta.set(fileId, { fileId, name: file.name, blob: file });
+          await idbPut('files', { fileId, name: file.name, blob: file });
+          const job = { id: ocrId(), order: ocrJobs.length, label: file.name, fileId, kind: 'image', status: 'wait', progress: 0 };
+          ocrJobs.push(job);
+          await idbPut('jobs', job);
+        }
+        ok = true;
+      } catch (err) {
+        if (attempt >= 3) {
+          setStatus('ocr-status', 'error', '✕ Could not read "' + file.name + '" after several tries — the file may be corrupted, password-protected, or your connection dropped mid-read.');
+        } else {
+          await new Promise(r => setTimeout(r, 500 * attempt));
+        }
+      }
+    }
+  }
+
+  if (unsupported > 0) {
+    setStatus('ocr-status', 'error', '⚠ ' + unsupported + ' file' + (unsupported === 1 ? '' : 's') + ' skipped — only PDF and image files (PNG, JPG, WEBP, GIF, BMP) are supported.');
+  }
+  hideLoadProgress();
+  renderOcrQueue();
+  ocrStartBtn.disabled = ocrJobs.filter(j => j.status === 'wait').length === 0;
+  ocrClearBtn.disabled = ocrJobs.length === 0;
+}
+
+/* ----- Rendering ----- */
+function renderOcrQueue() {
+  if (ocrJobs.length === 0) { ocrQueueEl.style.display = 'none'; return; }
+  ocrQueueEl.style.display = 'block';
+  ocrQueueEl.innerHTML = ocrJobs.map((j, i) => `
+    <div class="ocr-row">
+      <span class="ocr-idx">${String(i + 1).padStart(3, '0')}</span>
+      <span class="ocr-name">${escapeOcrHtml(j.label)}</span>
+      <span class="ocr-mini-track"><span class="ocr-mini-fill" style="width:${Math.round((j.progress || 0) * 100)}%"></span></span>
+      <span class="ocr-status ${j.status}"${j.status === 'err' ? ' style="cursor:pointer;text-decoration:underline;" onclick="retrySingleJob(\'' + j.id + '\')" title="Click to retry this page"' : ''}>${ocrStatusText(j)}</span>
+    </div>
+  `).join('');
+}
+
+function ocrStatusText(j) {
+  if (j.status === 'wait') return 'queued';
+  if (j.status === 'run') return Math.round((j.progress || 0) * 100) + '%';
+  if (j.status === 'done') return 'done';
+  if (j.status === 'err') return 'retry ↻';
+  return '';
+}
+
+function updateOcrOverall() {
+  const total = ocrJobs.length;
+  const pct = total ? (ocrJobs.reduce((s, j) => s + (j.progress || 0), 0) / total) * 100 : 0;
+  ocrProgressFill.style.width = pct + '%';
+}
+
+function renderOcrOutput() {
+  const finished = ocrJobs.filter(j => j.status === 'done');
+  if (finished.length === 0) { ocrResultBox.style.display = 'none'; return; }
+  ocrOutputEl.innerHTML = finished.map(j =>
+    '<div style="color:#c6a85c;font-weight:700;margin:10px 0 4px;">— ' + escapeOcrHtml(j.label) + ' —</div>' +
+    escapeOcrHtml(j.text || '(no text detected)')
+  ).join('');
+  ocrResultBox.style.display = 'block';
+  const doneCount = ocrJobs.filter(j => j.status === 'done').length;
+  const errCount = ocrJobs.filter(j => j.status === 'err').length;
+  ocrInfoEl.innerHTML = 'Pages scanned: <span>' + doneCount + ' / ' + ocrJobs.length + '</span>' + (errCount ? ' &nbsp;·&nbsp; ' + errCount + ' failed' : '');
+  ocrRetryFailedBtn.style.display = errCount > 0 ? 'inline-flex' : 'none';
+}
+
+function escapeOcrHtml(s) {
+  return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+}
+
+/* ----- Image / preprocessing pipeline ----- */
+async function getPdfDoc(fileId) {
+  if (ocrPdfDocCache.has(fileId)) return ocrPdfDocCache.get(fileId);
+  let rec = ocrFilesMeta.get(fileId);
+  if (!rec) rec = await idbGet('files', fileId);
+  if (!rec) throw new Error('missing_file');
+  const buf = await rec.blob.arrayBuffer();
+  const promise = pdfjsLib.getDocument({ data: buf }).promise;
+  ocrPdfDocCache.set(fileId, promise);
+  return promise;
+}
+
+async function enhanceForHandwriting(blob) {
+  const img = await new Promise((resolve, reject) => {
+    const el = new Image();
+    el.onload = () => resolve(el);
+    el.onerror = reject;
+    el.src = URL.createObjectURL(blob);
+  });
+  const scale = 1.6;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = data.data;
+  let min = 255, max = 0;
+  const gray = new Uint8ClampedArray(d.length / 4);
+  for (let i = 0, g = 0; i < d.length; i += 4, g++) {
+    const v = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    gray[g] = v;
+    if (v < min) min = v;
+    if (v > max) max = v;
+  }
+  const range = Math.max(1, max - min);
+  for (let i = 0, g = 0; i < d.length; i += 4, g++) {
+    const stretched = Math.min(255, Math.max(0, ((gray[g] - min) / range) * 255));
+    d[i] = d[i + 1] = d[i + 2] = stretched;
+  }
+  ctx.putImageData(data, 0, 0);
+  URL.revokeObjectURL(img.src);
+  return new Promise(res => canvas.toBlob(res, 'image/png'));
+}
+
+async function pageToOcrImage(job) {
+  let blob;
+  if (job.kind === 'image') {
+    let rec = ocrFilesMeta.get(job.fileId);
+    if (!rec) rec = await idbGet('files', job.fileId);
+    if (!rec) throw new Error('missing_file');
+    blob = rec.blob;
+  } else {
+    const pdf = await getPdfDoc(job.fileId);
+    const page = await pdf.getPage(job.pageNum);
+    const viewport = page.getViewport({ scale: 2.0 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    canvas.width = 0; canvas.height = 0;
+  }
+  if (ocrHandwritingBox.checked) blob = await enhanceForHandwriting(blob);
+  return blob;
+}
+
+/* ----- OCR engine pool with retry (handles slow / flaky connections) ----- */
+const TESSERACT_WORKER_PATH = 'https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.4/dist/worker.min.js';
+const TESSERACT_CORE_PATH = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0';
+const TESSERACT_LANG_PATH = 'https://tessdata.projectnaptha.com/4.0.0';
+const OCR_ENGINE_TIMEOUT_MS = 30000;
+const OCR_PAGE_TIMEOUT_MS = 90000;
+
+function withTimeout(promise, ms, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(message || 'timed_out')), ms))
+  ]);
+}
+
+function friendlyEngineStatus(status) {
+  if (status.includes('language')) return 'Downloading language data';
+  if (status.includes('core')) return 'Loading OCR engine';
+  if (status.includes('initializ')) return 'Initializing';
+  return 'Preparing';
+}
+
+function updateEngineWarmupProgress(slot, status, progress) {
+  ocrWarmupProgress[slot] = progress;
+  const avg = ocrWarmupProgress.reduce((a, b) => a + b, 0) / ocrWarmupProgress.length;
+  const pct = Math.round(avg * 100);
+  showLoadProgress(friendlyEngineStatus(status));
+  updateLoadProgress(pct, friendlyEngineStatus(status) + '… ' + pct + '%');
+}
+
+async function createWorkerWithRetry(lang, slot, attempt = 1) {
+  const maxAttempts = 4;
+  try {
+    const worker = await withTimeout(
+      Tesseract.createWorker(lang, 1, {
+        workerPath: TESSERACT_WORKER_PATH,
+        corePath: TESSERACT_CORE_PATH,
+        langPath: TESSERACT_LANG_PATH,
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            const job = ocrCurrentJobByWorker.get(worker);
+            if (job) {
+              job.progress = m.progress;
+              renderOcrQueue();
+              updateOcrOverall();
+            }
+          } else if (typeof m.progress === 'number') {
+            updateEngineWarmupProgress(slot, m.status || '', m.progress);
+          }
+        }
+      }),
+      OCR_ENGINE_TIMEOUT_MS,
+      'Engine load timed out'
+    );
+    return worker;
+  } catch (err) {
+    if (attempt >= maxAttempts) throw err;
+    setStatus('ocr-status', 'loading', 'Connection hiccup loading the OCR engine — retrying (' + attempt + '/' + (maxAttempts - 1) + ')…');
+    await new Promise(r => setTimeout(r, Math.min(8000, 600 * Math.pow(2, attempt))));
+    return createWorkerWithRetry(lang, slot, attempt + 1);
+  }
+}
+
+async function ensureOcrPool(lang) {
+  await destroyOcrPool();
+  ocrWarmupProgress = new Array(OCR_POOL_SIZE).fill(0);
+  for (let i = 0; i < OCR_POOL_SIZE; i++) {
+    const worker = await createWorkerWithRetry(lang, i);
+    ocrWorkerPool.push(worker);
+  }
+  hideLoadProgress();
+}
+
+async function destroyOcrPool() {
+  for (const w of ocrWorkerPool) { try { await w.terminate(); } catch (e) {} }
+  ocrWorkerPool = [];
+}
+
+/* ----- Main run ----- */
+async function startOcr() {
+  ocrRunning = true;
+  ocrCancelRequested = false;
+  ocrStartBtn.disabled = true;
+  ocrClearBtn.disabled = true;
+  ocrCancelRow.style.display = 'flex';
+  ocrCancelBtn.disabled = false;
+  ocrRetryRow.style.display = 'none';
+  ocrProgressTrack.style.display = 'block';
+  ocrRestoreBanner.style.display = 'none';
+
+  const lang = document.getElementById('ocr-lang').value;
+  setStatus('ocr-status', 'loading', 'Warming up the OCR engine…');
+
+  try {
+    await ensureOcrPool(lang);
+  } catch (err) {
+    hideLoadProgress();
+    setStatus('ocr-status', 'error', '✕ Could not reach the OCR engine after several tries. Check your connection, then retry.');
+    ocrRetryRow.style.display = 'flex';
+    ocrRunning = false;
+    ocrStartBtn.disabled = false;
+    ocrClearBtn.disabled = false;
+    ocrCancelRow.style.display = 'none';
+    return;
+  }
+
+  setStatus('ocr-status', 'loading', 'Scanning pages…');
+
+  const pending = ocrJobs.filter(j => j.status === 'wait');
+  let cursor = 0;
+
+  async function workerLoop(worker) {
+    while (cursor < pending.length) {
+      if (ocrCancelRequested) return;
+      const job = pending[cursor++];
+      job.status = 'run';
+      job.progress = 0;
+      ocrCurrentJobByWorker.set(worker, job);
+      renderOcrQueue();
+      try {
+        const img = await pageToOcrImage(job);
+        const result = await withTimeout(worker.recognize(img), OCR_PAGE_TIMEOUT_MS, 'Page timed out');
+        job.text = result.data.text;
+        job.progress = 1;
+        job.status = 'done';
+      } catch (err) {
+        job.status = 'err';
+        job.progress = 1;
+        job.text = job.text || '';
+      }
+      ocrCurrentJobByWorker.delete(worker);
+      await idbPut('jobs', job);
+      renderOcrQueue();
+      updateOcrOverall();
+      renderOcrOutput();
+    }
+  }
+
+  await Promise.all(ocrWorkerPool.map(w => workerLoop(w)));
+  await destroyOcrPool();
+
+  ocrRunning = false;
+  ocrCancelRow.style.display = 'none';
+  ocrClearBtn.disabled = false;
+
+  if (ocrCancelRequested) {
+    clearStatus('ocr-status');
+    setStatus('ocr-status', 'error', '✕ Scan cancelled — queued pages are saved, hit Start to pick back up.');
+    ocrStartBtn.disabled = ocrJobs.filter(j => j.status === 'wait').length === 0;
+  } else {
+    const errCount = ocrJobs.filter(j => j.status === 'err').length;
+    clearStatus('ocr-status');
+    if (errCount > 0) {
+      setStatus('ocr-status', 'error', '⚠ Done, but ' + errCount + ' page' + (errCount === 1 ? '' : 's') + " couldn't be read — click a failed row, or use \"Retry failed pages\" below.");
+    } else {
+      setStatus('ocr-status', 'success', '✓ Done — text extracted from ' + ocrJobs.length + ' page' + (ocrJobs.length === 1 ? '' : 's') + '.');
+    }
+    ocrStartBtn.disabled = ocrJobs.filter(j => j.status === 'wait').length === 0;
+  }
+}
+
+/* ----- Retry helpers ----- */
+async function retrySingleJob(jobId) {
+  if (ocrRunning) return;
+  const job = ocrJobs.find(j => j.id === jobId);
+  if (!job) return;
+  job.status = 'run';
+  job.progress = 0;
+  renderOcrQueue();
+  const lang = document.getElementById('ocr-lang').value;
+  let worker;
+  try {
+    worker = await createWorkerWithRetry(lang, 0);
+    hideLoadProgress();
+    ocrCurrentJobByWorker.set(worker, job);
+    const img = await pageToOcrImage(job);
+    const result = await withTimeout(worker.recognize(img), OCR_PAGE_TIMEOUT_MS, 'Page timed out');
+    job.text = result.data.text;
+    job.progress = 1;
+    job.status = 'done';
+  } catch (err) {
+    job.status = 'err';
+    job.progress = 1;
+  } finally {
+    if (worker) { ocrCurrentJobByWorker.delete(worker); try { await worker.terminate(); } catch (e) {} }
+  }
+  await idbPut('jobs', job);
+  renderOcrQueue();
+  updateOcrOverall();
+  renderOcrOutput();
+}
+
+ocrRetryFailedBtn.addEventListener('click', () => {
+  ocrJobs.filter(j => j.status === 'err').forEach(j => { j.status = 'wait'; j.progress = 0; });
+  renderOcrQueue();
+  ocrRetryFailedBtn.style.display = 'none';
+  startOcr();
+});
+
+ocrRetryEngineBtn.addEventListener('click', () => {
+  ocrRetryRow.style.display = 'none';
+  startOcr();
+});
+
+ocrCancelBtn.addEventListener('click', () => {
+  ocrCancelRequested = true;
+  ocrCancelBtn.disabled = true;
+  setStatus('ocr-status', 'loading', 'Cancelling…');
+});
+
+ocrClearBtn.addEventListener('click', async () => {
+  if (ocrJobs.length && !confirm('Clear all queued files and extracted text? This can\'t be undone.')) return;
+  ocrJobs = [];
+  ocrFilesMeta.clear();
+  ocrPdfDocCache.clear();
+  await idbClearAll();
+  ocrFileInput.value = '';
+  renderOcrQueue();
+  updateOcrOverall();
+  ocrProgressTrack.style.display = 'none';
+  ocrResultBox.style.display = 'none';
+  ocrOutputEl.innerHTML = '';
+  ocrRestoreBanner.style.display = 'none';
+  clearStatus('ocr-status');
+  ocrStartBtn.disabled = true;
+  ocrClearBtn.disabled = true;
+});
+
+function getOcrFullText() {
+  return ocrJobs.filter(j => j.status === 'done')
+    .map(j => '— ' + j.label + ' —\n' + (j.text || ''))
+    .join('\n\n');
+}
+
+ocrDownloadBtn.addEventListener('click', () => {
+  const text = getOcrFullText();
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  ocrDownloadBtn.href = url;
+});
+
+ocrCopyBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(getOcrFullText());
+  ocrCopyBtn.textContent = '✓ Copied!';
+  setTimeout(() => {
+    ocrCopyBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy All';
+  }, 2000);
+});
+
+initOcr();
 </script>
 </body>
 </html>
